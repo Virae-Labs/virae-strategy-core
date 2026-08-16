@@ -35,6 +35,8 @@ The package is synchronous and side-effect free. It is safe to run in workers, A
 9. Submit idempotently through a venue-specific adapter.
 10. Persist the venue order ID and reconcile fills independently of the request path.
 
+For Pre-M, call `buildPreMarketEntryPlan` once per task/account/round uniqueness scope. Persist all twelve intents before submission, submit each intent idempotently, and continue reconciling and cancelling even when new entries are disabled. After the take-profit delay, pass reconciled net open shares grouped from entry fills to `buildPreMarketTakeProfitIntents`; never pass requested shares or shares already sold.
+
 ## Minimal host adapter
 
 ```ts
@@ -94,6 +96,7 @@ For every durable decision, record at least:
 
 - trace ID and host release/commit;
 - `CRYPTO_TAIL_STRATEGY_MANIFEST`;
+- the applicable strategy manifest, including `PRE_MARKET_STRATEGY_MANIFEST` for Pre-M;
 - package version from `@viraeai/virae-strategy-core/package.json`;
 - strategy definition/profile and execution mode;
 - round/market/token identifiers;
@@ -119,6 +122,7 @@ Before connecting the package to real funds, verify:
 - [ ] submit/cancel/replace operations are idempotent;
 - [ ] timeouts do not imply that an order failed—reconciliation resolves unknown outcomes;
 - [ ] partial fills and residual positions are represented explicitly;
+- [ ] Pre-M entry rungs are persisted independently and take-profit input uses reconciled net open shares;
 - [ ] every state-changing action has a traceable audit event;
 - [ ] paper replay and canary/shadow evidence exists for the exact version;
 - [ ] rollback means restoring both host code and the exact prior package version;

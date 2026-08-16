@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.1.0 - 2026-08-16
+
+- Add deterministic BTC 15-minute Pre-M dual-ladder entry and take-profit execution contracts.
+- Add stable per-round intent keys for idempotent live execution.
+
 ## 0.0.2 - 2026-08-16
 
 ### Added

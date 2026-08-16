@@ -14,14 +14,14 @@ The package turns normalized round, oracle, order-book, risk, and configuration 
 ## Install
 
 ```bash
-npm install --save-exact @viraeai/virae-strategy-core@0.0.2
+npm install --save-exact @viraeai/virae-strategy-core@0.1.0
 ```
 
 Pin exact versions in systems that can submit real orders. Review the changelog and replay representative fixtures before every upgrade.
 
 ## What the strategy does
 
-The included `crypto-tail-directional` strategy evaluates a binary **Up/Down** market near the end of a fixed-duration round. In broad terms it:
+The package includes `crypto-tail-directional` and the BTC 15-minute `pre-market` dual-ladder execution contract. Crypto Tail evaluates a binary **Up/Down** market near the end of a fixed-duration round. In broad terms it:
 
 1. verifies the round, settlement source, oracle, order book, liquidity, and risk state;
 2. measures the reference-price lead from the round start;
@@ -32,7 +32,7 @@ The included `crypto-tail-directional` strategy evaluates a binary **Up/Down** m
 7. converts an eligible decision into a bounded limit-order intent;
 8. provides deterministic chase, exit, and lifecycle policies.
 
-See [Strategy design](./docs/strategy/crypto-tail.md) for the formulas, gate order, assumptions, and limitations.
+See [Crypto Tail strategy design](./docs/strategy/crypto-tail.md) and [Pre-M strategy design](./docs/strategy/pre-market.md) for formulas, timing, assumptions, and limitations.
 
 ## Quick start
 
@@ -142,11 +142,12 @@ Every decision includes a stable `reasonCode`, a human-readable message, and the
 
 ## Public modules
 
-Both imports expose the same API:
+The root exposes every strategy; focused subpaths expose only their named strategy:
 
 ```ts
 import { decideCryptoTailEntry } from '@viraeai/virae-strategy-core';
 import { decideCryptoTailEntry } from '@viraeai/virae-strategy-core/crypto-tail';
+import { buildPreMarketEntryPlan } from '@viraeai/virae-strategy-core/pre-market';
 ```
 
 The package includes:
@@ -157,6 +158,7 @@ The package includes:
 - direction-flip and distance-collapse exit decisions;
 - a pure lifecycle reducer that emits commands but performs no side effects;
 - a versioned strategy manifest and reference configuration;
+- deterministic Pre-M entry ladders, stable intent keys, and fill-aware take-profit intents;
 - TypeScript declarations and source maps.
 
 See the [API guide](./docs/api.md) for the export map and [integration guide](./docs/integration.md) for host responsibilities.
@@ -178,6 +180,7 @@ An execution host must validate every returned intent and fail closed when data 
 ## Documentation
 
 - [Crypto Tail strategy design](./docs/strategy/crypto-tail.md)
+- [Pre-M strategy design](./docs/strategy/pre-market.md)
 - [Integration and safety boundary](./docs/integration.md)
 - [Public API guide](./docs/api.md)
 - [Testing and replay](./docs/testing.md)

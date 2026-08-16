@@ -50,7 +50,10 @@ try {
     'dist/index.d.ts',
     'dist/crypto-tail/index.js',
     'dist/crypto-tail/index.d.ts',
+    'dist/pre-market/index.js',
+    'dist/pre-market/index.d.ts',
     'docs/strategy/crypto-tail.md',
+    'docs/strategy/pre-market.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
   ]) {
@@ -81,11 +84,14 @@ try {
 const assert = require('node:assert/strict');
 const root = require('@viraeai/virae-strategy-core');
 const subpath = require('@viraeai/virae-strategy-core/crypto-tail');
+const preMarket = require('@viraeai/virae-strategy-core/pre-market');
 const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
 assert.equal(root.decideCryptoTailEntry, subpath.decideCryptoTailEntry);
 assert.equal(root.CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion, 1);
+assert.equal(root.buildPreMarketEntryPlan, preMarket.buildPreMarketEntryPlan);
+assert.equal(preMarket.PRE_MARKET_STRATEGY_MANIFEST.executionPolicyVersion, 1);
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
 
@@ -93,8 +99,10 @@ assert.equal(root.CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion, 1);
 import assert from 'node:assert/strict';
 import * as root from '@viraeai/virae-strategy-core';
 import * as subpath from '@viraeai/virae-strategy-core/crypto-tail';
+import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 assert.equal(typeof root.decideCryptoTailEntry, 'function');
 assert.equal(typeof subpath.buildCryptoTailEntryExecutionPlan, 'function');
+assert.equal(typeof preMarket.buildPreMarketEntryPlan, 'function');
 `);
   run(process.execPath, ['consumer.mjs'], consumerRoot);
 
@@ -104,10 +112,16 @@ import {
   decideCryptoTailEntry,
   type CryptoTailDecisionInput,
 } from '@viraeai/virae-strategy-core/crypto-tail';
+import {
+  buildPreMarketEntryPlan,
+  type PreMarketRoundInput,
+} from '@viraeai/virae-strategy-core/pre-market';
 const input = null as unknown as CryptoTailDecisionInput;
 if (input) decideCryptoTailEntry(input);
 const policyVersion: number = CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion;
 void policyVersion;
+const round = null as unknown as PreMarketRoundInput;
+if (round) buildPreMarketEntryPlan({ round });
 `);
   const tsc = join(projectRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc');
   for (const [name, moduleResolution, module] of [
@@ -140,6 +154,7 @@ void policyVersion;
     'index.d.ts.map',
     'index.js',
     'index.js.map',
+    'pre-market',
   ]);
 
   console.log(`e2e consumer verified ${installedMetadata.name}@${installedMetadata.version}`);

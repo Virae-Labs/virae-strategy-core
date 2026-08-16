@@ -1,5 +1,6 @@
 import * as root from '../../src';
 import * as subpath from '../../src/crypto-tail';
+import * as preMarket from '../../src/pre-market';
 
 describe('public API contract', () => {
   it('exports the generic strategy surface from root and subpath entry points', () => {
@@ -39,5 +40,22 @@ describe('public API contract', () => {
     expect(root.buildBtc15mGateDiagnostics).toBe(root.buildCryptoTailGateDiagnostics);
     expect(root.estimateBtc15mAllInCost).toBe(root.estimateCryptoTailAllInCost);
     expect(root.estimateBtc15mWinProbability).toBe(root.estimateCryptoTailWinProbability);
+  });
+
+  it('exports the Pre-M strategy surface from root and its focused subpath', () => {
+    const names = [
+      'buildPreMarketEntryPlan',
+      'buildPreMarketTakeProfitIntents',
+      'normalizePreMarketStrategyConfig',
+      'preMarketPricesForMode',
+      'PRE_MARKET_STRATEGY_MANIFEST',
+      'DEFAULT_PRE_MARKET_STRATEGY_CONFIG',
+    ] as const;
+    for (const name of names) {
+      expect(root[name]).toBeDefined();
+      expect(root[name]).toBe(preMarket[name]);
+    }
+    expect(JSON.parse(JSON.stringify(root.PRE_MARKET_STRATEGY_MANIFEST)))
+      .toEqual(root.PRE_MARKET_STRATEGY_MANIFEST);
   });
 });

@@ -4,7 +4,7 @@
 
 The repository uses four complementary layers:
 
-1. **Unit tests** cover decision gates, calculations, execution policy, exit policy, and lifecycle transitions.
+1. **Unit tests** cover every strategy's decision gates, calculations, execution policy, exit policy, and lifecycle transitions.
 2. **Contract tests** verify the public root and subpath exports, manifest identity, and compatibility aliases.
 3. **Integration tests** run a complete snapshot → decision → plan → fill → exit lifecycle without side effects.
 4. **Package e2e** builds and packs the npm artifact, installs it into a temporary consumer, loads it through CommonJS and ESM, and compiles downstream TypeScript against the installed declarations.

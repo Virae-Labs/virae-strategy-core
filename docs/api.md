@@ -1,10 +1,11 @@
 # Public API guide
 
-The root entry point and `/crypto-tail` subpath currently expose the same symbols.
+The root entry point exposes all strategies. Prefer `/crypto-tail` or `/pre-market` for focused imports.
 
 ```ts
 import * as strategyCore from '@viraeai/virae-strategy-core';
 import * as cryptoTail from '@viraeai/virae-strategy-core/crypto-tail';
+import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 ```
 
 ## Manifest and reference data
@@ -80,3 +81,19 @@ The package exports complete input, configuration, decision, order-intent, exit,
 - Package subpaths are controlled by `exports`; do not import internal `dist` files.
 
 Any undocumented deep import is unsupported.
+
+## Pre-M dual ladder
+
+### `buildPreMarketEntryPlan({ round, config })`
+
+Returns twelve deterministic BUY intents across Up and Down, or a fail-closed reason when the round, market, token IDs, or launch window are invalid or unavailable. Each intent includes a stable per-round key; the host must namespace it by task/account when uniqueness is global.
+
+### `buildPreMarketTakeProfitIntents(params)`
+
+Aggregates multiple ladder fills and builds at most one SELL intent per outcome after the configured delay. Targets use actual net open shares and filled notional, never requested entry size. Malformed positions, conflicting token IDs, and quantities below the package's `0.01`-share output precision do not produce an intent.
+
+### `normalizePreMarketStrategyConfig(input)`
+
+Validates ladder mode, side budget, launch lead/grace, cancel window, and take-profit bounds. A host remains responsible for venue minimums, persistence, idempotency, signing, cancellation, reconciliation, and risk controls.
+
+See [Pre-M strategy design](./strategy/pre-market.md) for the exact ladders, configuration bounds, rounding rules, and host lifecycle contract.

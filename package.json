@@ -1,7 +1,7 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.0.2",
-  "description": "Deterministic, side-effect-free crypto tail strategy decisions, execution policies, and replay contracts.",
+  "version": "0.1.0",
+  "description": "Deterministic, side-effect-free prediction-market strategy decisions, execution policies, and replay contracts.",
   "keywords": [
     "prediction-markets",
     "trading-strategy",
@@ -27,6 +27,9 @@
     "*": {
       "crypto-tail": [
         "dist/crypto-tail/index.d.ts"
+      ],
+      "pre-market": [
+        "dist/pre-market/index.d.ts"
       ]
     }
   },
@@ -40,6 +43,11 @@
       "types": "./dist/crypto-tail/index.d.ts",
       "require": "./dist/crypto-tail/index.js",
       "default": "./dist/crypto-tail/index.js"
+    },
+    "./pre-market": {
+      "types": "./dist/pre-market/index.d.ts",
+      "require": "./dist/pre-market/index.js",
+      "default": "./dist/pre-market/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -56,7 +64,7 @@
     "clean": "rm -rf dist coverage",
     "prepare": "npm run build",
     "test": "jest --runInBand",
-    "test:unit": "jest src/crypto-tail/__tests__ --runInBand",
+    "test:unit": "jest src --runInBand",
     "test:contract": "jest test/contract --runInBand",
     "test:integration": "jest test/integration --runInBand",
     "test:e2e": "npm run build && node scripts/e2e-consumer.mjs",
