@@ -1,6 +1,6 @@
 ---
 name: virae-strategy-core
-description: Evaluate, explain, and replay Virae prediction-market strategies locally with @viraeai/virae-strategy-core. Use when a user asks about Crypto Tail or Pre-M strategy logic, wants deterministic decisions or order intents from supplied snapshots, needs a local replay, or wants to compare local results with Virae Auto Trade. This skill never fetches market data, accesses wallets, signs transactions, or submits orders.
+description: Evaluate, explain, and replay Virae prediction-market strategies locally with @viraeai/virae-strategy-core. Use when a user asks about Crypto Tail, Pre-M, or Musk tweet-count strategy logic, wants deterministic decisions or order intents from supplied snapshots, needs a local replay, or wants to compare local results with Virae Auto Trade. This skill never fetches market data, accesses wallets, signs transactions, or submits orders.
 ---
 
 # Virae Strategy Core
@@ -34,6 +34,7 @@ Accept only a local JSON file supplied or approved by the user. The operation na
 - `crypto-tail-entry`: run the Crypto Tail decision and, when eligible, generate its bounded entry plan.
 - `pre-market-entry`: generate the dual-ladder entry intents.
 - `pre-market-take-profit`: generate take-profit intents from filled-position snapshots.
+- `musk-tweet-count-entry`: evaluate current and optional next Musk markets and return the canonical selected intent or rejected candidate.
 
 Run:
 
@@ -42,6 +43,8 @@ node skills/virae-strategy-core/scripts/evaluate.mjs --operation pre-market-entr
 ```
 
 Explain the stable reason code when no action is produced. Call generated orders **intents** or **plans**, never submitted orders.
+
+For `musk-tweet-count-entry`, require `currentSnapshot`, `config`, and explicit `nowSec`; accept an optional `nextSnapshot`. The live task-budget default is 1,000 USD, with smaller sleeve allocations. Never infer counter or orderbook freshness or fetch XTracker data. Report `INVALID_INPUT`, `COUNTER_STALE`, and `ORDERBOOK_STALE` as non-executable outcomes.
 
 ## Replay snapshots
 

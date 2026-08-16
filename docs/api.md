@@ -1,11 +1,12 @@
 # Public API guide
 
-The root entry point exposes all strategies. Prefer `/crypto-tail` or `/pre-market` for focused imports.
+The root entry point exposes all strategies. Prefer `/crypto-tail`, `/pre-market`, or `/musk-tweet-count` for focused imports.
 
 ```ts
 import * as strategyCore from '@viraeai/virae-strategy-core';
 import * as cryptoTail from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
+import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 ```
 
 ## Manifest and reference data
@@ -97,3 +98,21 @@ Aggregates multiple ladder fills and builds at most one SELL intent per outcome 
 Validates ladder mode, side budget, launch lead/grace, cancel window, and take-profit bounds. A host remains responsible for venue minimums, persistence, idempotency, signing, cancellation, reconciliation, and risk controls.
 
 See [Pre-M strategy design](./strategy/pre-market.md) for the exact ladders, configuration bounds, rounding rules, and host lifecycle contract.
+
+## Musk tweet count
+
+### `decideMuskTweetCountEntry(params)`
+
+Evaluates the current snapshot and optional next snapshot with an explicit `nowSec`, then selects next-market BUY, current-market BUY, invalid input, next rejected, or current rejected in canonical priority order. The result includes both evaluations and a stable selector reason code. Invalid time values fail closed with `reasonCode: 'INVALID_INPUT'`.
+
+### `evaluateMuskTweetStrategy(snapshot, config, nowSec)`
+
+Returns eligible intents, rejected candidates, per-sleeve checks, diagnostics, and an optional typed `inputErrorCode` for the current market. Stale counter or selected-orderbook data always blocks new intents.
+
+### `evaluateMuskTweetNextMarketPreposition(current, next, config, nowSec)`
+
+Evaluates the next-market No preposition window without reading wall-clock time. Both current and next counters and the selected next-market orderbook must be fresh.
+
+### Supporting exports
+
+`normalizeMuskTweetStrategyConfig`, `selectMuskEvaluationSnapshots`, `resolveMuskTweetPersistentRiskStop`, `DEFAULT_MUSK_TWEET_STRATEGY_CONFIG`, and `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` are public. See [Musk tweet-count strategy design](./strategy/musk-tweet-count.md).

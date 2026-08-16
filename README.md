@@ -30,14 +30,14 @@ AI agents can use the bundled [`virae-strategy-core` skill](skills/virae-strateg
 ## Install
 
 ```bash
-npm install --save-exact @viraeai/virae-strategy-core@0.1.0
+npm install --save-exact @viraeai/virae-strategy-core@0.2.0
 ```
 
 Pin exact versions in systems that can submit real orders. Review the changelog and replay representative fixtures before every upgrade.
 
 ## What the strategy does
 
-The package includes `crypto-tail-directional` and the BTC 15-minute `pre-market` dual-ladder execution contract. Crypto Tail evaluates a binary **Up/Down** market near the end of a fixed-duration round. In broad terms it:
+The package includes `crypto-tail-directional`, the BTC 15-minute `pre-market` dual-ladder contract, and the Polymarket Musk tweet-count strategy used by Virae Auto Trade. Crypto Tail evaluates a binary **Up/Down** market near the end of a fixed-duration round. In broad terms it:
 
 1. verifies the round, settlement source, oracle, order book, liquidity, and risk state;
 2. measures the reference-price lead from the round start;
@@ -48,7 +48,9 @@ The package includes `crypto-tail-directional` and the BTC 15-minute `pre-market
 7. converts an eligible decision into a bounded limit-order intent;
 8. provides deterministic chase, exit, and lifecycle policies.
 
-See [Crypto Tail strategy design](./docs/strategy/crypto-tail.md) and [Pre-M strategy design](./docs/strategy/pre-market.md) for formulas, timing, assumptions, and limitations.
+Musk tweet-count exports deterministic current-market and next-market evaluations, stable intent keys, snapshot selection, configuration normalization, and persistent risk-stop decisions. Its live task-budget default is **1,000 USD**. Each strategy sleeve uses a bounded fraction of that budget and must still pass freshness, price, notional, and venue-size gates.
+
+See [Crypto Tail strategy design](./docs/strategy/crypto-tail.md), [Pre-M strategy design](./docs/strategy/pre-market.md), and [Musk tweet-count strategy design](./docs/strategy/musk-tweet-count.md) for formulas, timing, assumptions, and limitations.
 
 ## Quick start
 
@@ -164,6 +166,7 @@ The root exposes every strategy; focused subpaths expose only their named strate
 import { decideCryptoTailEntry } from '@viraeai/virae-strategy-core';
 import { decideCryptoTailEntry } from '@viraeai/virae-strategy-core/crypto-tail';
 import { buildPreMarketEntryPlan } from '@viraeai/virae-strategy-core/pre-market';
+import { decideMuskTweetCountEntry } from '@viraeai/virae-strategy-core/musk-tweet-count';
 ```
 
 The package includes:
@@ -175,6 +178,7 @@ The package includes:
 - a pure lifecycle reducer that emits commands but performs no side effects;
 - a versioned strategy manifest and reference configuration;
 - deterministic Pre-M entry ladders, stable intent keys, and fill-aware take-profit intents;
+- deterministic Musk tweet-count current/next-market decisions, selection, and risk-stop policy;
 - TypeScript declarations and source maps.
 
 See the [API guide](./docs/api.md) for the export map and [integration guide](./docs/integration.md) for host responsibilities.
@@ -197,6 +201,7 @@ An execution host must validate every returned intent and fail closed when data 
 
 - [Crypto Tail strategy design](./docs/strategy/crypto-tail.md)
 - [Pre-M strategy design](./docs/strategy/pre-market.md)
+- [Musk tweet-count strategy design](./docs/strategy/musk-tweet-count.md)
 - [Integration and safety boundary](./docs/integration.md)
 - [Public API guide](./docs/api.md)
 - [Testing and replay](./docs/testing.md)
@@ -217,6 +222,6 @@ npm run test:coverage
 
 `npm run check` performs strict type checking, all Jest suites, a production build, an actual tarball installation into a temporary consumer, CommonJS/ESM loading, and downstream TypeScript compilation.
 
-## License
+## License and required attribution
 
-Apache-2.0 © Virae Labs.
+CPAL-1.0 © Virae Labs. Executables with a graphical user interface, including Larger Works, must prominently display: “Powered by Virae Strategy Core” and link to [https://www.virae.ai/](https://www.virae.ai/), as specified in Exhibit B of [LICENSE](./LICENSE). External network deployment also triggers the source-availability obligations in CPAL-1.0.

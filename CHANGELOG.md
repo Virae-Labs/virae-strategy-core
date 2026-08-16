@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.2.0 - 2026-08-16
+
+- Move Musk tweet-count types, configuration, decisions, snapshot selection, and pure risk-stop policy from Polybot into the core package.
+- Add a deterministic current/next-market selector and stable Musk intent keys with a 1,000 USD live task-budget default.
+- Fail closed on stale selected orderbooks, stale next-market counters, and malformed timestamps; exclude `115+` from high-tail selection and apply task loss stops across sizing modes.
+- Add the `/musk-tweet-count` export, strategy catalog entry, tests, documentation, and AI Skill operations.
+- Change the project license from Apache-2.0 to CPAL-1.0 with required Virae attribution and URL display.
+
 ## 0.1.0 - 2026-08-16
 
 - Add deterministic BTC 15-minute Pre-M dual-ladder entry and take-profit execution contracts.

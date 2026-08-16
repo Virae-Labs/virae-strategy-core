@@ -1,10 +1,11 @@
 import { CRYPTO_TAIL_STRATEGY_MANIFEST } from './crypto-tail';
 import { PRE_MARKET_STRATEGY_MANIFEST } from './pre-market';
+import { MUSK_TWEET_COUNT_STRATEGY_MANIFEST } from './musk-tweet-count';
 
 export type ViraeStrategyCoreCatalogEntry = {
-  key: 'crypto-tail' | 'pre-market';
+  key: 'crypto-tail' | 'pre-market' | 'musk-tweet-count';
   packageName: '@viraeai/virae-strategy-core';
-  module: 'crypto-tail' | 'pre-market';
+  module: 'crypto-tail' | 'pre-market' | 'musk-tweet-count';
   autoTradeStrategyKeys: readonly string[];
   capabilities: {
     decision: boolean;
@@ -13,7 +14,7 @@ export type ViraeStrategyCoreCatalogEntry = {
     networkAccess: false;
     orderSubmission: false;
   };
-  manifest: typeof CRYPTO_TAIL_STRATEGY_MANIFEST | typeof PRE_MARKET_STRATEGY_MANIFEST;
+  manifest: typeof CRYPTO_TAIL_STRATEGY_MANIFEST | typeof PRE_MARKET_STRATEGY_MANIFEST | typeof MUSK_TWEET_COUNT_STRATEGY_MANIFEST;
 };
 
 /**
@@ -54,5 +55,19 @@ export const VIRAE_STRATEGY_CORE_CATALOG = [
       orderSubmission: false,
     },
     manifest: PRE_MARKET_STRATEGY_MANIFEST,
+  },
+  {
+    key: 'musk-tweet-count',
+    packageName: '@viraeai/virae-strategy-core',
+    module: 'musk-tweet-count',
+    autoTradeStrategyKeys: ['musk-tweet-count'],
+    capabilities: {
+      decision: true,
+      orderIntents: true,
+      replay: true,
+      networkAccess: false,
+      orderSubmission: false,
+    },
+    manifest: MUSK_TWEET_COUNT_STRATEGY_MANIFEST,
   },
 ] as const satisfies readonly ViraeStrategyCoreCatalogEntry[];

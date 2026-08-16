@@ -1,6 +1,7 @@
 import * as root from '../../src';
 import * as subpath from '../../src/crypto-tail';
 import * as preMarket from '../../src/pre-market';
+import * as muskTweetCount from '../../src/musk-tweet-count';
 
 describe('public API contract', () => {
   it('exports the generic strategy surface from root and subpath entry points', () => {
@@ -59,6 +60,27 @@ describe('public API contract', () => {
       .toEqual(root.PRE_MARKET_STRATEGY_MANIFEST);
   });
 
+  it('exports the Musk tweet-count surface from root and its focused subpath', () => {
+    const names = [
+      'decideMuskTweetCountEntry',
+      'evaluateMuskTweetStrategy',
+      'evaluateMuskTweetNextMarketPreposition',
+      'normalizeMuskTweetStrategyConfig',
+      'selectMuskEvaluationSnapshots',
+      'MUSK_TWEET_COUNT_STRATEGY_MANIFEST',
+      'DEFAULT_MUSK_TWEET_STRATEGY_CONFIG',
+    ] as const;
+    for (const name of names) {
+      expect(root[name]).toBeDefined();
+      expect(root[name]).toBe(muskTweetCount[name]);
+    }
+    expect(root.DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry.maxNotionalUsd).toBe(1_000);
+    expect(root.MUSK_TWEET_COUNT_STRATEGY_MANIFEST).toMatchObject({
+      modelVersion: 'musk-live-v2',
+      executionPolicyVersion: 2,
+    });
+  });
+
   it('publishes a serializable strategy catalog without execution capabilities', () => {
     expect(root.VIRAE_STRATEGY_CORE_CATALOG).toEqual([
       expect.objectContaining({
@@ -72,6 +94,12 @@ describe('public API contract', () => {
         module: 'pre-market',
         autoTradeStrategyKeys: ['btc-15m-premarket'],
         manifest: root.PRE_MARKET_STRATEGY_MANIFEST,
+      }),
+      expect.objectContaining({
+        key: 'musk-tweet-count',
+        module: 'musk-tweet-count',
+        autoTradeStrategyKeys: ['musk-tweet-count'],
+        manifest: root.MUSK_TWEET_COUNT_STRATEGY_MANIFEST,
       }),
     ]);
     for (const strategy of root.VIRAE_STRATEGY_CORE_CATALOG) {

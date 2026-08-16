@@ -37,6 +37,8 @@ The package is synchronous and side-effect free. It is safe to run in workers, A
 
 For Pre-M, call `buildPreMarketEntryPlan` once per task/account/round uniqueness scope. Persist all twelve intents before submission, submit each intent idempotently, and continue reconciling and cancelling even when new entries are disabled. After the take-profit delay, pass reconciled net open shares grouped from entry fills to `buildPreMarketTakeProfitIntents`; never pass requested shares or shares already sold.
 
+For Musk tweet count, normalize one coherent active snapshot and optional earliest upcoming snapshot, then call `decideMuskTweetCountEntry` with an explicit `nowSec`. Treat `selectedIntent.status === 'generated'` as a candidate only after rechecking both counter and selected-orderbook timestamps, task/global risk, balance, venue minimum size, and deduplication state. Persist `currentEvaluation`, `nextEvaluation`, `reasonCode`, manifest, effective 1,000 USD task-budget basis or lower host cap, and the selected snapshot identity. Never submit a rejected candidate returned for audit.
+
 ## Minimal host adapter
 
 ```ts
@@ -97,6 +99,7 @@ For every durable decision, record at least:
 - trace ID and host release/commit;
 - `CRYPTO_TAIL_STRATEGY_MANIFEST`;
 - the applicable strategy manifest, including `PRE_MARKET_STRATEGY_MANIFEST` for Pre-M;
+- `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` and selector reason for Musk tweet-count decisions;
 - package version from `@viraeai/virae-strategy-core/package.json`;
 - strategy definition/profile and execution mode;
 - round/market/token identifiers;
@@ -123,6 +126,8 @@ Before connecting the package to real funds, verify:
 - [ ] timeouts do not imply that an order failed—reconciliation resolves unknown outcomes;
 - [ ] partial fills and residual positions are represented explicitly;
 - [ ] Pre-M entry rungs are persisted independently and take-profit input uses reconciled net open shares;
+- [ ] Musk current/next counter freshness and selected-orderbook freshness are rechecked immediately before submission;
+- [ ] Musk intent keys are namespaced by account, task, and market lifecycle before durable deduplication;
 - [ ] every state-changing action has a traceable audit event;
 - [ ] paper replay and canary/shadow evidence exists for the exact version;
 - [ ] rollback means restoring both host code and the exact prior package version;

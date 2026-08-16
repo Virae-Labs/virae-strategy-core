@@ -9,6 +9,8 @@ The repository uses four complementary layers:
 3. **Integration tests** run a complete snapshot → decision → plan → fill → exit lifecycle without side effects.
 4. **Package e2e** builds and packs the npm artifact, installs it into a temporary consumer, loads it through CommonJS and ESM, and compiles downstream TypeScript against the installed declarations.
 
+The Musk integration corpus additionally proves that the 1,000 USD default can produce a current-market intent, stale counter/orderbook data cannot produce an executable intent, malformed times return typed invalid-input results, the `115+` range is not selected as high-tail, deterministic replay is deeply equal, and the bundled AI Skill executes the installed package rather than copied logic.
+
 ## Commands
 
 ```bash

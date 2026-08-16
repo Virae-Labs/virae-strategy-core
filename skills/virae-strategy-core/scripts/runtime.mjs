@@ -58,5 +58,12 @@ export function evaluate(operation, input) {
       intents: core.buildPreMarketTakeProfitIntents(input),
     };
   }
+  if (operation === 'musk-tweet-count-entry') {
+    return {
+      operation,
+      manifest: core.MUSK_TWEET_COUNT_STRATEGY_MANIFEST,
+      result: core.decideMuskTweetCountEntry(input),
+    };
+  }
   throw new Error(`Unsupported operation: ${operation ?? '(missing)'}`);
 }

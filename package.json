@@ -1,6 +1,6 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Deterministic, side-effect-free prediction-market strategy decisions, execution policies, and replay contracts.",
   "keywords": [
     "prediction-markets",
@@ -10,7 +10,7 @@
     "backtesting",
     "crypto"
   ],
-  "license": "Apache-2.0",
+  "license": "CPAL-1.0",
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -30,6 +30,9 @@
       ],
       "pre-market": [
         "dist/pre-market/index.d.ts"
+      ],
+      "musk-tweet-count": [
+        "dist/musk-tweet-count/index.d.ts"
       ]
     }
   },
@@ -49,6 +52,12 @@
       "require": "./dist/pre-market/index.js",
       "default": "./dist/pre-market/index.js"
     },
+    "./musk-tweet-count": {
+      "types": "./dist/musk-tweet-count/index.d.ts",
+      "require": "./dist/musk-tweet-count/index.js",
+      "default": "./dist/musk-tweet-count/index.js"
+    },
+    "./skills/*": "./skills/*",
     "./package.json": "./package.json"
   },
   "files": [

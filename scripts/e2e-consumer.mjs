@@ -52,6 +52,9 @@ try {
     'dist/crypto-tail/index.d.ts',
     'dist/pre-market/index.js',
     'dist/pre-market/index.d.ts',
+    'dist/musk-tweet-count/index.js',
+    'dist/musk-tweet-count/index.d.ts',
+    'docs/strategy/musk-tweet-count.md',
     'docs/strategy/crypto-tail.md',
     'docs/strategy/pre-market.md',
     'docs/integration.md',
@@ -93,6 +96,7 @@ const assert = require('node:assert/strict');
 const root = require('@viraeai/virae-strategy-core');
 const subpath = require('@viraeai/virae-strategy-core/crypto-tail');
 const preMarket = require('@viraeai/virae-strategy-core/pre-market');
+const muskTweetCount = require('@viraeai/virae-strategy-core/musk-tweet-count');
 const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
@@ -100,7 +104,31 @@ assert.equal(root.decideCryptoTailEntry, subpath.decideCryptoTailEntry);
 assert.equal(root.CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion, 1);
 assert.equal(root.buildPreMarketEntryPlan, preMarket.buildPreMarketEntryPlan);
 assert.equal(preMarket.PRE_MARKET_STRATEGY_MANIFEST.executionPolicyVersion, 1);
-assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market']);
+assert.equal(root.decideMuskTweetCountEntry, muskTweetCount.decideMuskTweetCountEntry);
+assert.equal(muskTweetCount.DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry.maxNotionalUsd, 1000);
+const nowSec = 2000000000;
+const nowIso = new Date(nowSec * 1000).toISOString();
+const muskMarket = {
+  eventSlug: 'musk-e2e', title: 'Musk E2E', startAt: nowIso,
+  endAt: new Date((nowSec + 21600) * 1000).toISOString(), status: 'active',
+  ranges: [{ label: '<40', minInclusive: 0, maxInclusive: 39, yesTokenId: 'musk-e2e-yes', noTokenId: 'musk-e2e-no' }],
+};
+const muskSnapshot = {
+  id: 'musk-e2e-snapshot', capturedAt: nowIso, market: muskMarket,
+  counter: { count: 39, source: 'xtracker', fresh: true, updatedAt: nowIso },
+  rates: { rate30m: 0, rate60m: 0, rate2h: 1, rate6h: 1, rate24h: 1, cooldownHours: 0, eventFactor: 'normal' },
+  remainingHours: 6,
+  orderbooks: [{ tokenId: 'musk-e2e-no', minOrderSize: 0.5, bestBid: 0.94, bestAsk: 0.95, spread: 0.01, topDepthUsd: 100, fresh: true, source: 'REST' }],
+  diagnostics: [],
+};
+const muskDecision = muskTweetCount.decideMuskTweetCountEntry({
+  currentSnapshot: muskSnapshot,
+  config: muskTweetCount.DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry,
+  nowSec,
+});
+assert.equal(muskDecision.reasonCode, 'CURRENT_MARKET_INTENT');
+assert.equal(muskDecision.selectedIntent.amount, 187.5);
+assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count']);
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
 
@@ -109,11 +137,34 @@ import assert from 'node:assert/strict';
 import * as root from '@viraeai/virae-strategy-core';
 import * as subpath from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
+import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 assert.equal(typeof root.decideCryptoTailEntry, 'function');
 assert.equal(typeof subpath.buildCryptoTailEntryExecutionPlan, 'function');
 assert.equal(typeof preMarket.buildPreMarketEntryPlan, 'function');
+assert.equal(typeof muskTweetCount.decideMuskTweetCountEntry, 'function');
 `);
   run(process.execPath, ['consumer.mjs'], consumerRoot);
+
+  writeFileSync(join(consumerRoot, 'skill-consumer.mjs'), `
+import assert from 'node:assert/strict';
+import { evaluate } from '@viraeai/virae-strategy-core/skills/virae-strategy-core/scripts/runtime.mjs';
+import { DEFAULT_MUSK_TWEET_STRATEGY_CONFIG } from '@viraeai/virae-strategy-core/musk-tweet-count';
+const nowSec = 2000000000;
+const nowIso = new Date(nowSec * 1000).toISOString();
+const currentSnapshot = {
+  id: 'skill-snapshot', capturedAt: nowIso,
+  market: { eventSlug: 'skill-market', title: 'Skill market', startAt: nowIso, endAt: new Date((nowSec + 21600) * 1000).toISOString(), status: 'active', ranges: [{ label: '<40', minInclusive: 0, maxInclusive: 39, yesTokenId: 'skill-yes', noTokenId: 'skill-no' }] },
+  counter: { count: 39, source: 'xtracker', fresh: true, updatedAt: nowIso },
+  rates: { rate30m: 0, rate60m: 0, rate2h: 1, rate6h: 1, rate24h: 1, cooldownHours: 0, eventFactor: 'normal' },
+  remainingHours: 6,
+  orderbooks: [{ tokenId: 'skill-no', minOrderSize: 0.5, bestBid: 0.94, bestAsk: 0.95, spread: 0.01, topDepthUsd: 100, fresh: true, source: 'REST' }],
+  diagnostics: [],
+};
+const output = evaluate('musk-tweet-count-entry', { currentSnapshot, config: DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry, nowSec });
+assert.equal(output.result.reasonCode, 'CURRENT_MARKET_INTENT');
+assert.equal(output.result.selectedIntent.amount, 187.5);
+`);
+  run(process.execPath, ['skill-consumer.mjs'], consumerRoot);
 
   writeFileSync(join(consumerRoot, 'consumer.ts'), `
 import {
@@ -125,12 +176,18 @@ import {
   buildPreMarketEntryPlan,
   type PreMarketRoundInput,
 } from '@viraeai/virae-strategy-core/pre-market';
+import {
+  decideMuskTweetCountEntry,
+  type MuskTweetSnapshot,
+} from '@viraeai/virae-strategy-core/musk-tweet-count';
 const input = null as unknown as CryptoTailDecisionInput;
 if (input) decideCryptoTailEntry(input);
 const policyVersion: number = CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion;
 void policyVersion;
 const round = null as unknown as PreMarketRoundInput;
 if (round) buildPreMarketEntryPlan({ round });
+const muskSnapshot = null as unknown as MuskTweetSnapshot;
+if (muskSnapshot) decideMuskTweetCountEntry({ currentSnapshot: muskSnapshot, config: {} as never, nowSec: 0 });
 `);
   const tsc = join(projectRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc');
   for (const [name, moduleResolution, module] of [
@@ -167,6 +224,7 @@ if (round) buildPreMarketEntryPlan({ round });
     'index.d.ts.map',
     'index.js',
     'index.js.map',
+    'musk-tweet-count',
     'pre-market',
   ]);
 
