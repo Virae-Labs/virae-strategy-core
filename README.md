@@ -11,6 +11,22 @@ The package turns normalized round, oracle, order-book, risk, and configuration 
 
 > **Experimental software.** The probability and cost models are explicit heuristics, not guarantees of accuracy or profitability. The reference configuration is for examples, paper trading, and replay—not financial advice or a production recommendation.
 
+## Same strategy logic, two ways to run it
+
+### Integrate the open-source core
+
+Install this package to run the versioned strategy decisions and order-intent generation in your own application. You provide the market data, execution adapter, persistence, reconciliation, wallet integration, and risk controls.
+
+### Run it with Virae Auto Trade
+
+The same versioned strategy logic published in this package is available for supported strategies through [Virae Auto Trade](https://www.virae.ai/auto-trade). Virae provides the hosted market-data, execution, reconciliation, monitoring, and operational interface, so you can use the strategy without operating that infrastructure yourself.
+
+**[Open Virae Auto Trade →](https://www.virae.ai/auto-trade)**
+
+The library itself remains deterministic and side-effect free: it never accesses a wallet or submits an order. Virae Auto Trade is the separate hosted execution product around the same strategy logic. Strategy availability and Paper/Live support are shown in the Auto Trade interface.
+
+AI agents can use the bundled [`virae-strategy-core` skill](skills/virae-strategy-core/SKILL.md) to discover the installed strategy catalog, evaluate supplied snapshots, and replay them locally. The skill preserves the same execution boundary: it produces decisions and order intents, not submitted orders.
+
 ## Install
 
 ```bash

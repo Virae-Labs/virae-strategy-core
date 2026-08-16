@@ -58,4 +58,32 @@ describe('public API contract', () => {
     expect(JSON.parse(JSON.stringify(root.PRE_MARKET_STRATEGY_MANIFEST)))
       .toEqual(root.PRE_MARKET_STRATEGY_MANIFEST);
   });
+
+  it('publishes a serializable strategy catalog without execution capabilities', () => {
+    expect(root.VIRAE_STRATEGY_CORE_CATALOG).toEqual([
+      expect.objectContaining({
+        key: 'crypto-tail',
+        module: 'crypto-tail',
+        autoTradeStrategyKeys: ['btc-15m-tail', 'eth-15m-tail', 'btc-1h-tail', 'eth-1h-tail'],
+        manifest: root.CRYPTO_TAIL_STRATEGY_MANIFEST,
+      }),
+      expect.objectContaining({
+        key: 'pre-market',
+        module: 'pre-market',
+        autoTradeStrategyKeys: ['btc-15m-premarket'],
+        manifest: root.PRE_MARKET_STRATEGY_MANIFEST,
+      }),
+    ]);
+    for (const strategy of root.VIRAE_STRATEGY_CORE_CATALOG) {
+      expect(strategy.capabilities).toMatchObject({
+        decision: true,
+        orderIntents: true,
+        replay: true,
+        networkAccess: false,
+        orderSubmission: false,
+      });
+    }
+    expect(JSON.parse(JSON.stringify(root.VIRAE_STRATEGY_CORE_CATALOG)))
+      .toEqual(root.VIRAE_STRATEGY_CORE_CATALOG);
+  });
 });

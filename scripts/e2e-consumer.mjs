@@ -56,6 +56,14 @@ try {
     'docs/strategy/pre-market.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
+    'skills/virae-strategy-core/SKILL.md',
+    'skills/virae-strategy-core/agents/openai.yaml',
+    'skills/virae-strategy-core/scripts/list-strategies.mjs',
+    'skills/virae-strategy-core/scripts/evaluate.mjs',
+    'skills/virae-strategy-core/scripts/replay.mjs',
+    'skills/virae-strategy-core/scripts/runtime.mjs',
+    'skills/virae-strategy-core/references/strategy-catalog.md',
+    'skills/virae-strategy-core/references/execution-boundary.md',
   ]) {
     assert.ok(packedPaths.has(required), `missing packed file: ${required}`);
   }
@@ -92,6 +100,7 @@ assert.equal(root.decideCryptoTailEntry, subpath.decideCryptoTailEntry);
 assert.equal(root.CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion, 1);
 assert.equal(root.buildPreMarketEntryPlan, preMarket.buildPreMarketEntryPlan);
 assert.equal(preMarket.PRE_MARKET_STRATEGY_MANIFEST.executionPolicyVersion, 1);
+assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market']);
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
 
@@ -149,6 +158,10 @@ if (round) buildPreMarketEntryPlan({ round });
   ));
   assert.equal(installedMetadata.sideEffects, false);
   assert.deepEqual(readdirSync(join(consumerRoot, 'node_modules', '@viraeai', 'virae-strategy-core', 'dist')).sort(), [
+    'catalog.d.ts',
+    'catalog.d.ts.map',
+    'catalog.js',
+    'catalog.js.map',
     'crypto-tail',
     'index.d.ts',
     'index.d.ts.map',

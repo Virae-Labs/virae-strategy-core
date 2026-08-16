@@ -1,0 +1,4 @@
+interface:
+  display_name: "Virae Strategy Core"
+  short_description: "Run and explain Virae strategies locally"
+  default_prompt: "Use $virae-strategy-core to evaluate, explain, or replay a Virae strategy locally without submitting orders."
