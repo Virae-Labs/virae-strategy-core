@@ -1,0 +1,54 @@
+{
+  "name": "@hqsv-labs/virae-strategy-core",
+  "version": "0.0.1",
+  "description": "Deterministic strategy decisions, execution policies, and replay contracts for Virae auto-trading.",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "crypto-tail": [
+        "dist/crypto-tail/index.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./crypto-tail": {
+      "types": "./dist/crypto-tail/index.d.ts",
+      "require": "./dist/crypto-tail/index.js",
+      "default": "./dist/crypto-tail/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "prepare": "npm run build",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --coverage --runInBand",
+    "prepack": "npm run clean && npm run build && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.10.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
