@@ -146,6 +146,7 @@ function fmt(value: number | null | undefined, digits = 3): string {
   return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : 'missing';
 }
 
+/** Builds an explanatory gate snapshot; the decision function remains authoritative. */
 export function buildBtc15mGateDiagnostics(input: Btc15mDecisionInput): Btc15mGateDiagnostic[] {
   const strategyLabel = input.strategyLabel ?? 'BTC 15m';
   const settlementPairLabel = input.settlementPairLabel ?? 'BTC/USD';
@@ -329,6 +330,10 @@ export function buildBtc15mGateDiagnostics(input: Btc15mDecisionInput): Btc15mGa
   return diagnostics;
 }
 
+/**
+ * Evaluates one immutable normalized snapshot and returns a deterministic entry decision.
+ * This function performs no I/O and never submits an order.
+ */
 export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisionResult {
   const strategyLabel = input.strategyLabel ?? 'BTC 15m';
   const settlementPairLabel = input.settlementPairLabel ?? 'BTC/USD';

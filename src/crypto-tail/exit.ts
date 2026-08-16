@@ -24,6 +24,7 @@ export type CryptoTailExitDecision = {
   secondsToEnd: number;
 };
 
+/** Evaluates reference-price exit signals; the host remains responsible for execution. */
 export function evaluateCryptoTailExit(params: {
   position: CryptoTailPositionSignal;
   policy: CryptoTailExitPolicy;

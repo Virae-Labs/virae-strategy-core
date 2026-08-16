@@ -41,6 +41,7 @@ function entryShares(notionalUsd: number, price: number): number {
   return Math.ceil(notionalUsd / price * 100) / 100;
 }
 
+/** Converts an eligible decision into a bounded order intent and execution policy. */
 export function buildCryptoTailEntryExecutionPlan(params: {
   decision: CryptoTailDecisionResult;
   config: CryptoTailStrategyConfig;
@@ -112,6 +113,7 @@ export type CryptoTailChaseEligibilityResult =
   | { eligible: true; chasePrice: number }
   | { eligible: false; reason: string };
 
+/** Evaluates a single bounded chase without cancelling or submitting any order. */
 export function evaluateCryptoTailChase(
   input: CryptoTailChaseEligibilityInput,
 ): CryptoTailChaseEligibilityResult {
@@ -129,6 +131,7 @@ export function evaluateCryptoTailChase(
   return { eligible: true, chasePrice };
 }
 
+/** Returns a replacement intent without mutating the original execution plan. */
 export function buildCryptoTailChaseOrder(
   plan: CryptoTailEntryExecutionPlan,
   chasePrice: number,

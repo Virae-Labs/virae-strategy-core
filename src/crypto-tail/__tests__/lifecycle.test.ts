@@ -1,5 +1,6 @@
 import { buildCryptoTailEntryExecutionPlan } from '../execution';
 import { createCryptoTailLifecycleState, reduceCryptoTailLifecycle } from '../lifecycle';
+import type { CryptoTailLifecycleState } from '../lifecycle';
 import { REFERENCE_CRYPTO_TAIL_CONFIG_V1 } from '../reference';
 
 function plan() {
@@ -129,5 +130,56 @@ describe('reduceCryptoTailLifecycle', () => {
       exitOrderId: null,
       exitFilledShares: 10,
     });
+  });
+
+  it('ignores entry decisions after the lifecycle has started or entries are stopped', () => {
+    const active = { ...createCryptoTailLifecycleState(), status: 'POSITION_OPEN' as const };
+    expect(reduceCryptoTailLifecycle(active, { type: 'ENTRY_DECIDED', plan: plan() }))
+      .toEqual({ state: active, commands: [] });
+
+    const stopped = { ...createCryptoTailLifecycleState(), newEntriesStopped: true };
+    expect(reduceCryptoTailLifecycle(stopped, { type: 'ENTRY_DECIDED', plan: plan() }))
+      .toEqual({ state: stopped, commands: [] });
+  });
+
+  it('handles exit acceptance, partial fill, cancellation, and residual reopening', () => {
+    let state: CryptoTailLifecycleState = {
+      ...createCryptoTailLifecycleState(),
+      status: 'POSITION_OPEN' as const,
+      entryFilledShares: 10,
+    };
+    const order = { ...plan().order, leg: 'EXIT' as const, side: 'SELL' as const, shares: 10 };
+    state = reduceCryptoTailLifecycle(state, { type: 'EXIT_DECIDED', order }).state;
+    state = reduceCryptoTailLifecycle(state, { type: 'ORDER_ACCEPTED', leg: 'EXIT', orderId: 'exit-1' }).state;
+    expect(state).toMatchObject({ status: 'EXIT_SUBMITTED', exitOrderId: 'exit-1' });
+    state = reduceCryptoTailLifecycle(state, {
+      type: 'ORDER_PARTIALLY_FILLED', leg: 'EXIT', cumulativeShares: 4, averagePrice: 0.9,
+    }).state;
+    expect(state).toMatchObject({ status: 'EXIT_SUBMITTED', exitFilledShares: 4 });
+    state = reduceCryptoTailLifecycle(state, { type: 'ORDER_CANCELLED', leg: 'EXIT' }).state;
+    expect(state).toMatchObject({ status: 'POSITION_OPEN', exitOrderId: null });
+  });
+
+  it('stops an idle lifecycle and settles or errors deterministically', () => {
+    const stopped = reduceCryptoTailLifecycle(createCryptoTailLifecycleState(), {
+      type: 'RISK_STOPPED', reasonCode: 'GLOBAL_STOP',
+    });
+    expect(stopped).toMatchObject({
+      state: { status: 'STOPPED', newEntriesStopped: true, stopReasonCode: 'GLOBAL_STOP' },
+      commands: [{ type: 'STOP_NEW_ENTRIES', reasonCode: 'GLOBAL_STOP' }],
+    });
+
+    expect(reduceCryptoTailLifecycle(stopped.state, { type: 'ROUND_SETTLED' }).state.status).toBe('COMPLETED');
+    expect(reduceCryptoTailLifecycle(createCryptoTailLifecycleState(), {
+      type: 'EXECUTION_FAILED', code: 'VENUE_UNAVAILABLE',
+    }).state).toMatchObject({ status: 'ERROR', errorCode: 'VENUE_UNAVAILABLE' });
+  });
+
+  it('ignores entry deadlines and exit decisions in invalid states', () => {
+    const initial = createCryptoTailLifecycleState();
+    expect(reduceCryptoTailLifecycle(initial, { type: 'ENTRY_DEADLINE_REACHED' }))
+      .toEqual({ state: initial, commands: [] });
+    expect(reduceCryptoTailLifecycle(initial, { type: 'EXIT_DECIDED', order: plan().order }))
+      .toEqual({ state: initial, commands: [] });
   });
 });

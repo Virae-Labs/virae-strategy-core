@@ -48,6 +48,7 @@ export type CryptoTailLifecycleTransition = {
   commands: CryptoTailLifecycleCommand[];
 };
 
+/** Creates a serializable initial lifecycle state. */
 export function createCryptoTailLifecycleState(): CryptoTailLifecycleState {
   return {
     status: 'IDLE',
@@ -72,6 +73,10 @@ function transition(
   return { state: { ...state, ...patch }, commands };
 }
 
+/**
+ * Pure lifecycle reducer. Returned commands are descriptions that a durable,
+ * idempotent host adapter must validate and execute.
+ */
 export function reduceCryptoTailLifecycle(
   state: CryptoTailLifecycleState,
   event: CryptoTailLifecycleEvent,

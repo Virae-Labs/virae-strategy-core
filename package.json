@@ -1,15 +1,24 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.0.1",
-  "description": "Deterministic strategy decisions, execution policies, and replay contracts for Virae auto-trading.",
+  "version": "0.0.2",
+  "description": "Deterministic, side-effect-free crypto tail strategy decisions, execution policies, and replay contracts.",
+  "keywords": [
+    "prediction-markets",
+    "trading-strategy",
+    "polymarket",
+    "typescript",
+    "backtesting",
+    "crypto"
+  ],
   "license": "Apache-2.0",
+  "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HQSV-Labs/virae-strategy-core.git"
+    "url": "git+https://github.com/Virae-Labs/virae-strategy-core.git"
   },
-  "homepage": "https://github.com/HQSV-Labs/virae-strategy-core#readme",
+  "homepage": "https://github.com/Virae-Labs/virae-strategy-core#readme",
   "bugs": {
-    "url": "https://github.com/HQSV-Labs/virae-strategy-core/issues"
+    "url": "https://github.com/Virae-Labs/virae-strategy-core/issues"
   },
   "type": "commonjs",
   "main": "dist/index.js",
@@ -31,11 +40,15 @@
       "types": "./dist/crypto-tail/index.d.ts",
       "require": "./dist/crypto-tail/index.js",
       "default": "./dist/crypto-tail/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "docs",
+    "examples",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -43,7 +56,14 @@
     "clean": "rm -rf dist coverage",
     "prepare": "npm run build",
     "test": "jest --runInBand",
+    "test:unit": "jest src/crypto-tail/__tests__ --runInBand",
+    "test:contract": "jest test/contract --runInBand",
+    "test:integration": "jest test/integration --runInBand",
+    "test:e2e": "npm run build && node scripts/e2e-consumer.mjs",
     "test:coverage": "jest --coverage --runInBand",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "example": "npm run build && node examples/decision-and-plan.cjs",
+    "check": "npm run typecheck && npm test && npm run test:e2e",
     "prepack": "npm run clean && npm run build && npm test"
   },
   "engines": {

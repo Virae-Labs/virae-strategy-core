@@ -53,6 +53,52 @@ describe('buildCryptoTailEntryExecutionPlan', () => {
       config: REFERENCE_CRYPTO_TAIL_CONFIG_V1,
     })).toEqual({ ok: false, reasonCode: 'DECISION_NOT_ELIGIBLE' });
   });
+
+  it.each([
+    ['selectedTokenId', null],
+    ['candidateOutcome', null],
+    ['limitPrice', null],
+    ['limitPrice', 0],
+    ['notionalUsd', null],
+    ['notionalUsd', 0],
+  ] as const)('rejects an incomplete eligible payload: %s=%s', (field, value) => {
+    expect(buildCryptoTailEntryExecutionPlan({
+      decision: { ...eligibleDecision(), [field]: value },
+      config: REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+    })).toEqual({ ok: false, reasonCode: 'DECISION_PAYLOAD_INCOMPLETE' });
+  });
+
+  it('normalizes disabled chase and exit controls into the plan', () => {
+    const result = buildCryptoTailEntryExecutionPlan({
+      decision: eligibleDecision(),
+      config: {
+        ...REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+        entry: {
+          ...REFERENCE_CRYPTO_TAIL_CONFIG_V1.entry,
+          entryOrderChaseEnabled: false,
+          takeProfitEnabled: true,
+          takeProfitPrice: 0.97,
+          orderbookStopEnabled: true,
+          orderbookStopPrice: 0.85,
+          directionFlipStopEnabled: true,
+          distanceCollapseStopEnabled: true,
+          distanceCollapseStopPercent: 35,
+        },
+      },
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      plan: {
+        chase: { enabled: false },
+        exitPolicy: {
+          takeProfitPrice: 0.97,
+          orderbookStopPrice: 0.85,
+          directionFlipEnabled: true,
+          distanceCollapsePercent: 35,
+        },
+      },
+    });
+  });
 });
 
 describe('evaluateCryptoTailChase', () => {
@@ -80,6 +126,26 @@ describe('evaluateCryptoTailChase', () => {
       roundEndSec: 120,
       nowSec: 100,
     })).toEqual({ eligible: false, reason: 'CHASE_PRICE_EXCEEDS_ASK_CAP' });
+  });
+
+  it.each([
+    [{ alreadyChased: true }, 'ALREADY_CHASED'],
+    [{ maxChaseTicks: 0 }, 'CHASE_DISABLED'],
+    [{ originalPrice: Number.NaN }, 'ORIGINAL_PRICE_UNKNOWN'],
+    [{ roundEndSec: null }, 'ROUND_END_UNKNOWN'],
+    [{ nowSec: 111 }, 'INSUFFICIENT_TIME_REMAINING'],
+  ] as const)('fails closed for chase input %o', (overrides, reason) => {
+    expect(evaluateCryptoTailChase({
+      alreadyChased: false,
+      maxChaseTicks: 1,
+      tickSize: 0.01,
+      askCap: 0.95,
+      originalPrice: 0.92,
+      cancelAfterMs: 10_000,
+      roundEndSec: 120,
+      nowSec: 100,
+      ...overrides,
+    })).toEqual({ eligible: false, reason });
   });
 
   it('builds a replacement intent without mutating the original plan', () => {

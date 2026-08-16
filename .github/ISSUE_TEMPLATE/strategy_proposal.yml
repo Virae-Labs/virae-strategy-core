@@ -1,0 +1,34 @@
+name: Strategy proposal
+description: Propose a transparent, testable change to strategy behavior.
+title: "[Strategy]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or hypothesis
+      description: State the market behavior or policy weakness without claiming unverified profitability.
+    validations:
+      required: true
+  - type: textarea
+    id: rule
+    attributes:
+      label: Proposed deterministic rule
+      description: Define inputs, formula, boundaries, and output/reason-code changes.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Validation evidence
+      description: Describe sanitized replay data, boundary cases, and failure modes.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety and compatibility impact
+      description: Cover stale data, concurrency, partial fills, host responsibilities, and versioning.
+    validations:
+      required: true
