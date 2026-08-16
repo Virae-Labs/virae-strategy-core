@@ -18,7 +18,7 @@ import {
   buildCryptoTailEntryExecutionPlan,
   decideCryptoTailEntry,
   REFERENCE_CRYPTO_TAIL_CONFIG_V1,
-} from '@hqsv-labs/virae-strategy-core/crypto-tail';
+} from '@viraeai/virae-strategy-core/crypto-tail';
 
 const decision = decideCryptoTailEntry({
   nowSec,

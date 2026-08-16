@@ -1,5 +1,5 @@
 {
-  "name": "@hqsv-labs/virae-strategy-core",
+  "name": "@viraeai/virae-strategy-core",
   "version": "0.0.1",
   "description": "Deterministic strategy decisions, execution policies, and replay contracts for Virae auto-trading.",
   "license": "Apache-2.0",
