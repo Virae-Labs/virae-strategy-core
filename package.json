@@ -3,6 +3,14 @@
   "version": "0.0.1",
   "description": "Deterministic strategy decisions, execution policies, and replay contracts for Virae auto-trading.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HQSV-Labs/virae-strategy-core.git"
+  },
+  "homepage": "https://github.com/HQSV-Labs/virae-strategy-core#readme",
+  "bugs": {
+    "url": "https://github.com/HQSV-Labs/virae-strategy-core/issues"
+  },
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -49,6 +57,7 @@
     "typescript": "^5.9.3"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
