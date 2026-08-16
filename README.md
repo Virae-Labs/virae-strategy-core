@@ -200,4 +200,4 @@ npm run test:coverage
 
 ## License
 
-Apache-2.0 © HQSV Labs.
+Apache-2.0 © Virae Labs.
