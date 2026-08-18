@@ -2,11 +2,12 @@ import { CRYPTO_TAIL_STRATEGY_MANIFEST } from './crypto-tail';
 import { PRE_MARKET_STRATEGY_MANIFEST } from './pre-market';
 import { MUSK_TWEET_COUNT_STRATEGY_MANIFEST } from './musk-tweet-count';
 import { WEATHER_TEMPERATURE_STRATEGY_MANIFEST } from './weather-temperature';
+import { EV_SNIPE_STRATEGY_MANIFEST } from './ev-snipe';
 
 export type ViraeStrategyCoreCatalogEntry = {
-  key: 'crypto-tail' | 'pre-market' | 'musk-tweet-count' | 'weather-temperature';
+  key: 'crypto-tail' | 'pre-market' | 'musk-tweet-count' | 'weather-temperature' | 'ev-snipe';
   packageName: '@viraeai/virae-strategy-core';
-  module: 'crypto-tail' | 'pre-market' | 'musk-tweet-count' | 'weather-temperature';
+  module: 'crypto-tail' | 'pre-market' | 'musk-tweet-count' | 'weather-temperature' | 'ev-snipe';
   autoTradeStrategyKeys: readonly string[];
   capabilities: {
     decision: boolean;
@@ -15,7 +16,7 @@ export type ViraeStrategyCoreCatalogEntry = {
     networkAccess: false;
     orderSubmission: false;
   };
-  manifest: typeof CRYPTO_TAIL_STRATEGY_MANIFEST | typeof PRE_MARKET_STRATEGY_MANIFEST | typeof MUSK_TWEET_COUNT_STRATEGY_MANIFEST | typeof WEATHER_TEMPERATURE_STRATEGY_MANIFEST;
+  manifest: typeof CRYPTO_TAIL_STRATEGY_MANIFEST | typeof PRE_MARKET_STRATEGY_MANIFEST | typeof MUSK_TWEET_COUNT_STRATEGY_MANIFEST | typeof WEATHER_TEMPERATURE_STRATEGY_MANIFEST | typeof EV_SNIPE_STRATEGY_MANIFEST;
 };
 
 /**
@@ -84,5 +85,19 @@ export const VIRAE_STRATEGY_CORE_CATALOG = [
       orderSubmission: false,
     },
     manifest: WEATHER_TEMPERATURE_STRATEGY_MANIFEST,
+  },
+  {
+    key: 'ev-snipe',
+    packageName: '@viraeai/virae-strategy-core',
+    module: 'ev-snipe',
+    autoTradeStrategyKeys: [],
+    capabilities: {
+      decision: true,
+      orderIntents: true,
+      replay: true,
+      networkAccess: false,
+      orderSubmission: false,
+    },
+    manifest: EV_SNIPE_STRATEGY_MANIFEST,
   },
 ] as const satisfies readonly ViraeStrategyCoreCatalogEntry[];

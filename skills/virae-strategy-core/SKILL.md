@@ -1,6 +1,6 @@
 ---
 name: virae-strategy-core
-description: Evaluate, explain, and replay Virae prediction-market strategies locally with @viraeai/virae-strategy-core. Use for Crypto Tail, Pre-M, Musk Tweet Count, or Weather Temperature logic, deterministic decisions or order intents from supplied snapshots, local replay, or comparison with Virae Auto Trade. This skill never fetches market data, accesses wallets, signs transactions, or submits orders.
+description: Evaluate, explain, and replay Virae prediction-market strategies locally with @viraeai/virae-strategy-core. Use for Crypto Tail, Pre-M, Musk Tweet Count, Weather Temperature, or simulation-only EV Snipe logic, deterministic decisions or order intents from supplied snapshots, local replay, or comparison with Virae Auto Trade. This skill never fetches market data, accesses wallets, signs transactions, or submits orders.
 ---
 
 # Virae Strategy Core
@@ -36,6 +36,8 @@ Accept only a local JSON file supplied or approved by the user. The operation na
 - `pre-market-take-profit`: generate take-profit intents from filled-position snapshots.
 - `musk-tweet-count-entry`: evaluate current and optional next Musk markets and return the canonical selected intent or rejected candidate.
 - `weather-temperature-entry`: evaluate one normalized weather event and forecast run, returning per-bucket reasons and zero-to-two YES intents.
+- `ev-snipe-entry`: evaluate one normalized hit-price market/tick/quote snapshot and return a simulation-only FAK intent when eligible.
+- `ev-snipe-system-matrix`: run the built-in system matrix, or an optional `matrix` array supplied in the input JSON.
 
 Run:
 
@@ -48,6 +50,8 @@ Explain the stable reason code when no action is produced. Call generated orders
 For `musk-tweet-count-entry`, require `currentSnapshot`, `config`, and explicit `nowSec`; accept an optional `nextSnapshot`. The live task-budget default is 1,000 USD, with smaller sleeve allocations. Never infer counter or orderbook freshness or fetch XTracker data. Report `INVALID_INPUT`, `COUNTER_STALE`, and `ORDERBOOK_STALE` as non-executable outcomes.
 
 For `weather-temperature-entry`, require `snapshot`, normalized entry `config`, and explicit `nowSec`. Never fetch GFS data or infer station, timezone, target date, bucket probability, or quote freshness. Report `INVALID_INPUT`, timing mismatch, stale book, invalid probability, and below-minimum size as non-executable outcomes.
+
+For EV Snipe, never infer resolution-source equivalence from a market title. Require canonical source identity, consecutive trade prices, exchange/receive/evaluation timestamps, and an executable quote. Pre-hit also requires an explicit probability. Call every output simulation-only; this package has no EV Snipe live-host key.
 
 ## Replay snapshots
 

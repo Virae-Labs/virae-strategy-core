@@ -10,6 +10,7 @@ import * as cryptoTail from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
+import * as evSnipe from '@viraeai/virae-strategy-core/ev-snipe';
 ```
 
 | Module | Primary decision/plan API | Manifest |
@@ -18,6 +19,7 @@ import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temper
 | `/pre-market` | `buildPreMarketEntryPlan` | `PRE_MARKET_STRATEGY_MANIFEST` |
 | `/musk-tweet-count` | `decideMuskTweetCountEntry` | `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` |
 | `/weather-temperature` | `decideWeatherTemperatureEntry` | `WEATHER_TEMPERATURE_STRATEGY_MANIFEST` |
+| `/ev-snipe` | `decideEvSnipeEntry`, `runEvSnipeSystemSimulationMatrix` | `EV_SNIPE_STRATEGY_MANIFEST` |
 
 `VIRAE_STRATEGY_CORE_CATALOG` is the machine-readable source for strategy key, module, hosted Auto Trade keys, capability flags, and manifest. Read the installed package version from its `package.json`; it is intentionally not duplicated in the catalog.
 
@@ -77,6 +79,17 @@ See [Musk Tweet Count strategy design](./strategy/musk-tweet-count.md).
 The primary decision validates malformed runtime inputs and fails closed. The normalized risk object is configuration for a stateful host; the pure decision cannot enforce daily/event/task limits without durable state.
 
 See [Weather Temperature strategy design](./strategy/weather-temperature.md).
+
+## EV Snipe
+
+- `decideEvSnipeEntry(input)` evaluates a normalized Confirm-hit or Pre-hit snapshot and returns `WAIT`, `SKIP`, or `ELIGIBLE` with a typed reason and optional BUY/FAK intent.
+- `estimateEvSnipeNetEdgeBps(params)` applies the explicit probability, price, protocol-fee, and builder-fee model.
+- `simulateEvSnipeFill(input)` models FAK no-fill, partial/full fill, binary payout, fees, and PnL.
+- `buildEvSnipeSystemSimulationMatrix()` returns the version-controlled system scenario corpus.
+- `runEvSnipeSystemSimulationMatrix(matrix?)` evaluates the corpus and returns row-level mismatches.
+- `DEFAULT_EV_SNIPE_STRATEGY_CONFIG` and `EV_SNIPE_STRATEGY_MANIFEST` are public reference exports.
+
+The manifest is `SIMULATION_ONLY`; the catalog therefore has no hosted Auto Trade key for EV Snipe. See [EV Snipe simulation contract](./strategy/ev-snipe.md).
 
 ## Common integration rules
 

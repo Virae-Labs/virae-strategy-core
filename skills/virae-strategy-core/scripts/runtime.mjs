@@ -72,5 +72,21 @@ export function evaluate(operation, input) {
       result: core.decideWeatherTemperatureEntry(input),
     };
   }
+  if (operation === 'ev-snipe-entry') {
+    return {
+      operation,
+      manifest: core.EV_SNIPE_STRATEGY_MANIFEST,
+      result: core.decideEvSnipeEntry(input),
+    };
+  }
+  if (operation === 'ev-snipe-system-matrix') {
+    const matrix = Array.isArray(input?.matrix) ? input.matrix : core.buildEvSnipeSystemSimulationMatrix();
+    return {
+      operation,
+      manifest: core.EV_SNIPE_STRATEGY_MANIFEST,
+      count: matrix.length,
+      results: core.runEvSnipeSystemSimulationMatrix(matrix),
+    };
+  }
   throw new Error(`Unsupported operation: ${operation ?? '(missing)'}`);
 }

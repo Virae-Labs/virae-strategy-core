@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.4.0 - 2026-08-18
+
+- Add a simulation-only EV Snipe strategy contract with source-equivalent hit detection, explicit Confirm-hit and Pre-hit semantics, freshness/price/edge gates, deterministic FAK intents, and fee-aware fill/settlement simulation.
+- Add a system-level EV Snipe matrix spanning trigger boundaries, data quality, execution outcomes, economics, and Pre-hit safety, without adding live discovery, feeds, persistence, or order submission.
+- Fail closed on excessive source transport latency and invalid fee models, expose source latency in decisions, and apply the venue's documented five-decimal protocol-fee precision.
+
 ## 0.3.0
 
 - Add the deterministic Weather Temperature decision, configuration, manifest, catalog, replay, and order-intent contract.

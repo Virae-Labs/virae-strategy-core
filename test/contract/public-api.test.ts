@@ -3,6 +3,7 @@ import * as subpath from '../../src/crypto-tail';
 import * as preMarket from '../../src/pre-market';
 import * as muskTweetCount from '../../src/musk-tweet-count';
 import * as weatherTemperature from '../../src/weather-temperature';
+import * as evSnipe from '../../src/ev-snipe';
 
 describe('public API contract', () => {
   it('exports the generic strategy surface from root and subpath entry points', () => {
@@ -100,6 +101,27 @@ describe('public API contract', () => {
     expect(root.WEATHER_TEMPERATURE_SIGNAL_PROFILES).toHaveLength(3);
   });
 
+  it('exports the simulation-only EV Snipe surface from root and its focused subpath', () => {
+    const names = [
+      'decideEvSnipeEntry',
+      'estimateEvSnipeNetEdgeBps',
+      'buildEvSnipeSystemSimulationMatrix',
+      'runEvSnipeSystemSimulationMatrix',
+      'simulateEvSnipeFill',
+      'normalizeEvSnipeStrategyConfig',
+      'EV_SNIPE_STRATEGY_MANIFEST',
+      'DEFAULT_EV_SNIPE_STRATEGY_CONFIG',
+    ] as const;
+    for (const name of names) {
+      expect(root[name]).toBeDefined();
+      expect(root[name]).toBe(evSnipe[name]);
+    }
+    expect(root.EV_SNIPE_STRATEGY_MANIFEST).toMatchObject({
+      modelVersion: 'ev-snipe-simulation-v1',
+      executionPhase: 'SIMULATION_ONLY',
+    });
+  });
+
   it('publishes a serializable strategy catalog without execution capabilities', () => {
     expect(root.VIRAE_STRATEGY_CORE_CATALOG).toEqual([
       expect.objectContaining({
@@ -125,6 +147,12 @@ describe('public API contract', () => {
         module: 'weather-temperature',
         autoTradeStrategyKeys: ['weather-temperature'],
         manifest: root.WEATHER_TEMPERATURE_STRATEGY_MANIFEST,
+      }),
+      expect.objectContaining({
+        key: 'ev-snipe',
+        module: 'ev-snipe',
+        autoTradeStrategyKeys: [],
+        manifest: root.EV_SNIPE_STRATEGY_MANIFEST,
       }),
     ]);
     for (const strategy of root.VIRAE_STRATEGY_CORE_CATALOG) {

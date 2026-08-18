@@ -15,6 +15,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 | [Pre-M](./docs/strategy/pre-market.md) | BTC 15m Up/Down before market open | 12 dual-sided BUY ladder intents and fill-aware take-profit SELL intents | Safe/Normal/Aggressive ladders, stable per-round keys, explicit cancellation deadline |
 | [Musk Tweet Count](./docs/strategy/musk-tweet-count.md) | Current and next Polymarket tweet-count markets | Sleeve evaluations plus one canonical selected or rejected intent | Low/high-tail No, late directional Yes, lottery Yes, next-market preposition |
 | [Weather Temperature](./docs/strategy/weather-temperature.md) | Daily high/low temperature buckets | Ranked YES limit-order intents and per-bucket evaluations | GFS ensemble probabilities, station-local timing, Strict/Core/Wide profiles, TOP1 or adjacent TOP2 |
+| [EV Snipe](./docs/strategy/ev-snipe.md) | Crypto hit-price markets (simulation only) | Confirm-hit/Pre-hit decision, FAK intent, fill/PnL simulation, system matrix | Exact crossing semantics, source/freshness/edge gates, explicit small-win/large-loss evidence |
 
 ### Why use this package
 
@@ -29,7 +30,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 ## Install
 
 ```bash
-npm install --save-exact @viraeai/virae-strategy-core@0.3.0
+npm install --save-exact @viraeai/virae-strategy-core@0.4.0
 ```
 
 Pin exact versions in money-moving systems. Review the [changelog](./CHANGELOG.md) and replay representative fixtures before every upgrade.
@@ -44,6 +45,7 @@ import { decideCryptoTailEntry } from '@viraeai/virae-strategy-core/crypto-tail'
 import { buildPreMarketEntryPlan } from '@viraeai/virae-strategy-core/pre-market';
 import { decideMuskTweetCountEntry } from '@viraeai/virae-strategy-core/musk-tweet-count';
 import { decideWeatherTemperatureEntry } from '@viraeai/virae-strategy-core/weather-temperature';
+import { runEvSnipeSystemSimulationMatrix } from '@viraeai/virae-strategy-core/ev-snipe';
 
 for (const strategy of VIRAE_STRATEGY_CORE_CATALOG) {
   console.log(strategy.key, strategy.manifest.modelVersion, strategy.capabilities);
@@ -87,6 +89,7 @@ Calling this package never submits an order. A returned `ELIGIBLE`, generated in
 - **Pre-M:** `buildPreMarketEntryPlan` returns either twelve intents or a typed failure. Take-profit generation uses reconciled net open shares only.
 - **Musk Tweet Count:** the selector prioritizes an eligible next-market preposition, then the first eligible current sleeve. Rejected candidates are returned for audit and are never executable.
 - **Weather Temperature:** the decision returns `ENTRY_INTENTS`, `NO_ELIGIBLE_BUCKET`, or `INVALID_INPUT`, plus an evaluation for every bucket and typed diagnostics.
+- **EV Snipe:** `ELIGIBLE` means a normalized Confirm-hit or explicitly modeled Pre-hit passed the pure gates. The strategy remains simulation-only and the host must prove resolution-source equivalence before considering execution.
 
 See the [public API guide](./docs/api.md) for functions and types, and the [integration guide](./docs/integration.md) for the production host contract.
 
@@ -112,6 +115,7 @@ Before submission, a host must revalidate market state, data freshness, tick/pre
 - [Pre-M strategy design](./docs/strategy/pre-market.md)
 - [Musk Tweet Count strategy design](./docs/strategy/musk-tweet-count.md)
 - [Weather Temperature strategy design](./docs/strategy/weather-temperature.md)
+- [EV Snipe simulation contract](./docs/strategy/ev-snipe.md)
 - [Public API guide](./docs/api.md)
 - [Integration and safety boundary](./docs/integration.md)
 - [Testing and replay](./docs/testing.md)
