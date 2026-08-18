@@ -44,7 +44,7 @@ npm view @viraeai/virae-strategy-core@X.Y.Z name version dist.integrity
 npm install --save-exact @viraeai/virae-strategy-core@X.Y.Z
 ```
 
-Load root, `/crypto-tail`, `/pre-market`, and `/musk-tweet-count` entry points; execute one installed-package Musk fixture and bundled Skill operation; and compile a downstream TypeScript file. Confirm the registry integrity matches the committed lockfile used by the first production consumer.
+Load root, `/crypto-tail`, `/pre-market`, `/musk-tweet-count`, and `/weather-temperature` entry points; execute installed-package Musk and Weather fixtures through the bundled Skill; and compile a downstream TypeScript file. Confirm the registry integrity matches the committed lockfile used by the first production consumer.
 
 Do not publish another version merely to work around registry propagation until npm confirms whether the first publish exists. A tarball, dist-tag, metadata document, and anonymous clean install should agree.
 

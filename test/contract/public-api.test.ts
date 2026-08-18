@@ -2,6 +2,7 @@ import * as root from '../../src';
 import * as subpath from '../../src/crypto-tail';
 import * as preMarket from '../../src/pre-market';
 import * as muskTweetCount from '../../src/musk-tweet-count';
+import * as weatherTemperature from '../../src/weather-temperature';
 
 describe('public API contract', () => {
   it('exports the generic strategy surface from root and subpath entry points', () => {
@@ -81,6 +82,24 @@ describe('public API contract', () => {
     });
   });
 
+  it('exports the Weather Temperature surface from root and its focused subpath', () => {
+    const names = [
+      'decideWeatherTemperatureEntry',
+      'evaluateWeatherTemperatureCandidate',
+      'normalizeWeatherTemperatureStrategyConfig',
+      'WEATHER_TEMPERATURE_STRATEGY_MANIFEST',
+      'DEFAULT_WEATHER_TEMPERATURE_ENTRY_CONFIG',
+      'WEATHER_TEMPERATURE_SIGNAL_PROFILES',
+      'WEATHER_TEMPERATURE_CONFIG_VERSION',
+    ] as const;
+    for (const name of names) {
+      expect(root[name]).toBeDefined();
+      expect(root[name]).toBe(weatherTemperature[name]);
+    }
+    expect(root.WEATHER_TEMPERATURE_CONFIG_VERSION).toBe('weather-gfs-v3');
+    expect(root.WEATHER_TEMPERATURE_SIGNAL_PROFILES).toHaveLength(3);
+  });
+
   it('publishes a serializable strategy catalog without execution capabilities', () => {
     expect(root.VIRAE_STRATEGY_CORE_CATALOG).toEqual([
       expect.objectContaining({
@@ -100,6 +119,12 @@ describe('public API contract', () => {
         module: 'musk-tweet-count',
         autoTradeStrategyKeys: ['musk-tweet-count'],
         manifest: root.MUSK_TWEET_COUNT_STRATEGY_MANIFEST,
+      }),
+      expect.objectContaining({
+        key: 'weather-temperature',
+        module: 'weather-temperature',
+        autoTradeStrategyKeys: ['weather-temperature'],
+        manifest: root.WEATHER_TEMPERATURE_STRATEGY_MANIFEST,
       }),
     ]);
     for (const strategy of root.VIRAE_STRATEGY_CORE_CATALOG) {

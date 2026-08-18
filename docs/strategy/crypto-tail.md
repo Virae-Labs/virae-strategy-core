@@ -1,5 +1,35 @@
 # Crypto Tail strategy design
 
+## At a glance
+
+| Item | Contract |
+| --- | --- |
+| Markets | BTC and ETH binary Up/Down rounds, 15-minute and 1-hour |
+| Primary API | `decideCryptoTailEntry` |
+| Outputs | `WAIT`, `SKIP`, or `ELIGIBLE`; gate diagnostics; bounded execution plan |
+| Additional policies | One-shot chase, direction-flip/distance-collapse exit, pure lifecycle reducer |
+| Core boundary | No discovery, network, wallet, persistence, signing, or venue submission |
+
+```ts
+import {
+  REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+  buildCryptoTailEntryExecutionPlan,
+  decideCryptoTailEntry,
+} from '@viraeai/virae-strategy-core/crypto-tail';
+
+const decision = decideCryptoTailEntry({
+  ...normalizedSnapshot,
+  nowSec,
+  config: REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+});
+const plan = buildCryptoTailEntryExecutionPlan({
+  decision,
+  config: REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+});
+```
+
+`normalizedSnapshot` and `nowSec` are caller-provided. A successful plan is still only a limit-order intent.
+
 ## Status
 
 - Strategy ID: `crypto-tail-directional`
@@ -63,6 +93,12 @@ For a Chainlink TWAP-style resolution model, `Pt` is expected to represent the c
 14. Optional estimated-edge gate passes.
 
 The result is `WAIT`, `SKIP`, or `ELIGIBLE`. `WAIT` is used when the same round may reasonably become eligible on a later fresh snapshot. `SKIP` means the current evaluation should not submit an order. Neither value authorizes a side effect.
+
+## Output contract
+
+`CryptoTailDecisionResult` carries the stable decision and reason code together with the candidate outcome/token, seconds to end, distance, required distance, heuristic win probability, estimated cost and edge, notional, and limit price when available. `buildCryptoTailGateDiagnostics` exposes individual `pass`, `fail`, or `pending` gates for UI and audit surfaces; the decision function remains authoritative.
+
+An eligible decision can be converted into `CryptoTailEntryExecutionPlan`, which includes the strategy identity, entry order intent, cancellation timeout, chase bounds, and exit-policy values. Persist both the input and the manifest before any side effect. Namespace durable uniqueness by account, task, and round.
 
 ## Cost heuristic
 
@@ -145,6 +181,10 @@ Commands are descriptions, not side effects. A host must persist event identity,
 ## Reference configuration
 
 `REFERENCE_CRYPTO_TAIL_CONFIG_V1` exists so examples, tests, and paper replays are reproducible. Its values are not a statement of current Virae production calibration and must not be interpreted as recommended thresholds.
+
+## Host responsibilities
+
+The host must resolve the exact market, confirm settlement/oracle equivalence, construct freshness assertions, load durable risk and duplicate-round state, and serialize submissions. Immediately before submission it must recheck the global live gate, venue state, tick/precision, minimum size, depth, balance, credentials, and jurisdictional controls. It must also persist ambiguous submit/cancel outcomes and reconcile them by durable identity before retrying.
 
 ## Known limitations
 

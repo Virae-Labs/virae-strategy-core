@@ -54,9 +54,12 @@ try {
     'dist/pre-market/index.d.ts',
     'dist/musk-tweet-count/index.js',
     'dist/musk-tweet-count/index.d.ts',
+    'dist/weather-temperature/index.js',
+    'dist/weather-temperature/index.d.ts',
     'docs/strategy/musk-tweet-count.md',
     'docs/strategy/crypto-tail.md',
     'docs/strategy/pre-market.md',
+    'docs/strategy/weather-temperature.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
     'skills/virae-strategy-core/SKILL.md',
@@ -97,6 +100,7 @@ const root = require('@viraeai/virae-strategy-core');
 const subpath = require('@viraeai/virae-strategy-core/crypto-tail');
 const preMarket = require('@viraeai/virae-strategy-core/pre-market');
 const muskTweetCount = require('@viraeai/virae-strategy-core/musk-tweet-count');
+const weatherTemperature = require('@viraeai/virae-strategy-core/weather-temperature');
 const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
@@ -106,6 +110,8 @@ assert.equal(root.buildPreMarketEntryPlan, preMarket.buildPreMarketEntryPlan);
 assert.equal(preMarket.PRE_MARKET_STRATEGY_MANIFEST.executionPolicyVersion, 1);
 assert.equal(root.decideMuskTweetCountEntry, muskTweetCount.decideMuskTweetCountEntry);
 assert.equal(muskTweetCount.DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry.maxNotionalUsd, 1000);
+assert.equal(root.decideWeatherTemperatureEntry, weatherTemperature.decideWeatherTemperatureEntry);
+assert.equal(weatherTemperature.WEATHER_TEMPERATURE_STRATEGY_MANIFEST.modelVersion, 'weather-gfs-v3');
 const nowSec = 2000000000;
 const nowIso = new Date(nowSec * 1000).toISOString();
 const muskMarket = {
@@ -128,7 +134,7 @@ const muskDecision = muskTweetCount.decideMuskTweetCountEntry({
 });
 assert.equal(muskDecision.reasonCode, 'CURRENT_MARKET_INTENT');
 assert.equal(muskDecision.selectedIntent.amount, 187.5);
-assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count']);
+assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature']);
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
 
@@ -138,10 +144,12 @@ import * as root from '@viraeai/virae-strategy-core';
 import * as subpath from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
+import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
 assert.equal(typeof root.decideCryptoTailEntry, 'function');
 assert.equal(typeof subpath.buildCryptoTailEntryExecutionPlan, 'function');
 assert.equal(typeof preMarket.buildPreMarketEntryPlan, 'function');
 assert.equal(typeof muskTweetCount.decideMuskTweetCountEntry, 'function');
+assert.equal(typeof weatherTemperature.decideWeatherTemperatureEntry, 'function');
 `);
   run(process.execPath, ['consumer.mjs'], consumerRoot);
 
@@ -149,6 +157,7 @@ assert.equal(typeof muskTweetCount.decideMuskTweetCountEntry, 'function');
 import assert from 'node:assert/strict';
 import { evaluate } from '@viraeai/virae-strategy-core/skills/virae-strategy-core/scripts/runtime.mjs';
 import { DEFAULT_MUSK_TWEET_STRATEGY_CONFIG } from '@viraeai/virae-strategy-core/musk-tweet-count';
+import { DEFAULT_WEATHER_TEMPERATURE_ENTRY_CONFIG } from '@viraeai/virae-strategy-core/weather-temperature';
 const nowSec = 2000000000;
 const nowIso = new Date(nowSec * 1000).toISOString();
 const currentSnapshot = {
@@ -163,6 +172,19 @@ const currentSnapshot = {
 const output = evaluate('musk-tweet-count-entry', { currentSnapshot, config: DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry, nowSec });
 assert.equal(output.result.reasonCode, 'CURRENT_MARKET_INTENT');
 assert.equal(output.result.selectedIntent.amount, 187.5);
+const weatherOutput = evaluate('weather-temperature-entry', {
+  nowSec: Date.parse('2026-08-17T23:00:00Z') / 1000,
+  config: DEFAULT_WEATHER_TEMPERATURE_ENTRY_CONFIG,
+  snapshot: {
+    capturedAt: '2026-08-17T22:59:00Z', forecastRunKey: 'gfs-e2e', eventSlug: 'weather-e2e', eventTitle: 'Weather E2E',
+    stationCode: 'KLGA', timezone: 'America/New_York', targetDate: '2026-08-18', metric: 'high',
+    ensembleMemberCount: 31, ensembleStdDevF: 2,
+    candidates: [{ marketId: 'weather-market', yesTokenId: 'weather-yes', bucket: { label: '80-81F', lowerBound: 80, upperBound: 81 }, modelProbability: 0.4,
+      quote: { bestAsk: 0.2, bestBid: 0.19, spread: 0.01, minOrderSize: 5, topAskDepthUsd: 100, fresh: true, acceptingOrders: true } }],
+  },
+});
+assert.equal(weatherOutput.result.reasonCode, 'ENTRY_INTENTS');
+assert.equal(weatherOutput.result.intents.length, 1);
 `);
   run(process.execPath, ['skill-consumer.mjs'], consumerRoot);
 
@@ -226,6 +248,7 @@ if (muskSnapshot) decideMuskTweetCountEntry({ currentSnapshot: muskSnapshot, con
     'index.js.map',
     'musk-tweet-count',
     'pre-market',
+    'weather-temperature',
   ]);
 
   console.log(`e2e consumer verified ${installedMetadata.name}@${installedMetadata.version}`);

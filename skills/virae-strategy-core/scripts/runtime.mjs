@@ -65,5 +65,12 @@ export function evaluate(operation, input) {
       result: core.decideMuskTweetCountEntry(input),
     };
   }
+  if (operation === 'weather-temperature-entry') {
+    return {
+      operation,
+      manifest: core.WEATHER_TEMPERATURE_STRATEGY_MANIFEST,
+      result: core.decideWeatherTemperatureEntry(input),
+    };
+  }
   throw new Error(`Unsupported operation: ${operation ?? '(missing)'}`);
 }

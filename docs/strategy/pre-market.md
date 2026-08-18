@@ -1,5 +1,16 @@
 # BTC 15-minute Pre-M dual ladder
 
+## At a glance
+
+| Item | Contract |
+| --- | --- |
+| Market | BTC 15-minute binary Up/Down round |
+| Entry API | `buildPreMarketEntryPlan` |
+| Entry output | Six BUY rungs for Up plus six BUY rungs for Down |
+| Exit API | `buildPreMarketTakeProfitIntents` |
+| Exit output | At most one fill-aware SELL intent per outcome |
+| Modes | `SAFE`, `NORMAL`, and `AGGRESSIVE` |
+
 ## Scope
 
 Pre-M is a deterministic execution contract for placing limit orders on both outcomes before a BTC 15-minute round opens. The package only creates order intents. Market discovery, persistence, signing, submission, cancellation, fill reconciliation, balance checks, risk limits, settlement, and recovery belong to the host.
@@ -27,6 +38,12 @@ await host.persistTakeProfitIntents(exits);
 ```
 
 The identifiers and host methods above are intentionally caller-defined. Calling these pure functions does not submit an order.
+
+## Input and output contracts
+
+Entry input contains a stable round key, start/end/current epoch seconds, market/accepting-order flags, and distinct canonical Up/Down token IDs. A successful `PreMarketEntryPlanResult` contains twelve intents plus one common cancellation deadline. Typed failures are `INVALID_ROUND`, `MARKET_UNAVAILABLE`, `TOKEN_IDS_MISSING`, `TOKEN_IDS_INVALID`, and `OUTSIDE_LAUNCH_WINDOW`.
+
+Take-profit input contains the round identity and timing plus reconciled fill rows. Each row supplies outcome, token, filled shares, filled notional, and optional best ask. Invalid or internally inconsistent position data fails closed with no exit intents. This conservative empty-array result must be logged by the host; it must not be interpreted as proof that no position exists.
 
 ## Entry ladder
 

@@ -11,6 +11,8 @@ The repository uses four complementary layers:
 
 The Musk integration corpus additionally proves that the 1,000 USD default can produce a current-market intent, stale counter/orderbook data cannot produce an executable intent, malformed times return typed invalid-input results, the `115+` range is not selected as high-tail, deterministic replay is deeply equal, and the bundled AI Skill executes the installed package rather than copied logic.
 
+The Weather unit and package corpus covers station/date/timezone identity, forecast health, malformed numeric values, stale/unavailable quotes, venue minimum size, exact cent allocation for adjacent TOP2, deterministic intent keys, normalization fallbacks, focused subpath exports, and bundled Skill execution.
+
 ## Commands
 
 ```bash

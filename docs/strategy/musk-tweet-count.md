@@ -1,6 +1,38 @@
 # Musk tweet-count strategy
 
+## At a glance and status
+
+| Item | Contract |
+| --- | --- |
+| Strategy ID | `polymarket-musk-tweet-count` |
+| Model / execution policy | `musk-live-v2` / version `2` |
+| Primary API | `decideMuskTweetCountEntry` |
+| Sleeves | Low-tail No, high-tail No, late directional Yes, lottery Yes, next-market No preposition |
+| Output | One canonical generated or rejected candidate plus full current/next evaluations |
+
+```ts
+import {
+  DEFAULT_MUSK_TWEET_STRATEGY_CONFIG,
+  decideMuskTweetCountEntry,
+} from '@viraeai/virae-strategy-core/musk-tweet-count';
+
+const decision = decideMuskTweetCountEntry({
+  currentSnapshot,
+  nextSnapshot,
+  config: DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry,
+  nowSec,
+});
+```
+
+The snapshots and explicit `nowSec` are host-provided. A selected intent is not a submitted order.
+
 The Musk tweet-count module is the single decision implementation used by Polybot and local consumers. It accepts normalized market, XTracker counter, rate, and order-book snapshots; it performs no discovery, HTTP, database, wallet, or order-submission work.
+
+## Snapshot contract
+
+A coherent `MuskTweetSnapshot` contains market identity and time range, bucket definitions and YES/NO token IDs, a counter value/source/update timestamp/freshness assertion, 30m/60m/2h/6h/24h rate signals, event factor, remaining hours, and token-level orderbook quotes. A selected quote must have a tradable ask, fresh source, and available venue minimum size.
+
+The host owns XTracker collection, clock comparison, market-range normalization, and confirmation that counter semantics match settlement rules. The package validates time fields and gates on supplied freshness booleans; it cannot prove upstream correctness.
 
 ## Public contract and deterministic priority
 
@@ -29,6 +61,8 @@ Selection priority is: eligible next-market preposition, first eligible current-
 
 Amounts are rounded to four decimal places. Every candidate must meet `minOrderNotionalUsd` and the venue-provided minimum share size. Polybot may replace `B` with a lower effective task bankroll or global cap before evaluation.
 
+The default entry TTL is 45 seconds, minimum order notional is 1 USD, and deterministic-profit floor is 0.25 USD. Default signal windows include a 10-tweet low-boundary buffer, at most eight hours for high-tail No, two-to-four hours for late directional, burst thresholds of 3 tweets/30m or 8 tweets/60m, and an eight-hour upcoming-market window. Use `normalizeMuskTweetStrategyConfig` for bounded external configuration; persist the resulting values rather than only raw user input.
+
 ## Entry rules
 
 ### Low-tail No
@@ -56,6 +90,8 @@ For an upcoming market starting within `nextMarketPrepositionMaxHours`, it targe
 Counter freshness and selected-orderbook freshness are mandatory. Missing asks, `source: UNAVAILABLE`, stale quotes, unavailable market minimum size, below-minimum notional/shares, malformed timestamps, and strategy price/state gates block entry.
 
 Malformed time input produces `INVALID_INPUT` at selector level and one of `INVALID_NOW_SEC`, `INVALID_SNAPSHOT_CAPTURED_AT`, `INVALID_MARKET_START_AT`, `INVALID_MARKET_END_AT`, or `INVALID_COUNTER_UPDATED_AT` on the evaluation. Common candidate blockers include `COUNTER_STALE`, `ORDERBOOK_STALE`, `NO_TRADABLE_ASK`, `MIN_ORDER_SIZE_UNAVAILABLE`, `ORDER_NOTIONAL_BELOW_MINIMUM`, `LIMIT_ORDER_SIZE_BELOW_MARKET_MINIMUM`, and the sleeve-specific state and price codes returned in `checks[].blockers`.
+
+`MuskTweetCountEntryDecision` preserves `currentEvaluation` and `nextEvaluation`, identifies the selected evaluation, and returns one selector reason: `NEXT_MARKET_INTENT`, `CURRENT_MARKET_INTENT`, `NEXT_MARKET_REJECTED`, `CURRENT_MARKET_REJECTED`, `INVALID_INPUT`, or `NO_CANDIDATE`. A candidate with `status: 'rejected'` is an audit explanation, never an execution instruction.
 
 ## Persistent risk stops and host boundary
 

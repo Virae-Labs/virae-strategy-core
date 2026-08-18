@@ -1,6 +1,6 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Deterministic, side-effect-free prediction-market strategy decisions, execution policies, and replay contracts.",
   "keywords": [
     "prediction-markets",
@@ -33,6 +33,9 @@
       ],
       "musk-tweet-count": [
         "dist/musk-tweet-count/index.d.ts"
+      ],
+      "weather-temperature": [
+        "dist/weather-temperature/index.d.ts"
       ]
     }
   },
@@ -56,6 +59,11 @@
       "types": "./dist/musk-tweet-count/index.d.ts",
       "require": "./dist/musk-tweet-count/index.js",
       "default": "./dist/musk-tweet-count/index.js"
+    },
+    "./weather-temperature": {
+      "types": "./dist/weather-temperature/index.d.ts",
+      "require": "./dist/weather-temperature/index.js",
+      "default": "./dist/weather-temperature/index.js"
     },
     "./skills/*": "./skills/*",
     "./package.json": "./package.json"

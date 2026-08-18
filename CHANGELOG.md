@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.3.0
+
+- Add the deterministic Weather Temperature decision, configuration, manifest, catalog, replay, and order-intent contract.
+- Keep weather data collection, live risk controls, and order submission outside the package execution boundary.
+- Fail closed on unconfigured stations, malformed date/timezone/metric/candidate/config values, non-finite prices/probabilities, unavailable venue minimum size, and undersized selected legs.
+- Preserve the exact event budget in integer cents for adjacent TOP2 and expose Weather evaluation/replay through the bundled Skill.
+- Expand the README, all strategy guides, public API, integration contract, testing, and release documentation for the four-strategy catalog.
+
 ## 0.2.0 - 2026-08-16
 
 - Move Musk tweet-count types, configuration, decisions, snapshot selection, and pure risk-stop policy from Polybot into the core package.

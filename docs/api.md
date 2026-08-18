@@ -1,118 +1,94 @@
 # Public API guide
 
-The root entry point exposes all strategies. Prefer `/crypto-tail`, `/pre-market`, or `/musk-tweet-count` for focused imports.
+## Entry points
+
+The root entry point exports all strategies and the catalog. Focused imports reduce name collisions and make ownership clear.
 
 ```ts
-import * as strategyCore from '@viraeai/virae-strategy-core';
+import { VIRAE_STRATEGY_CORE_CATALOG } from '@viraeai/virae-strategy-core';
 import * as cryptoTail from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
+import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
 ```
 
-## Manifest and reference data
+| Module | Primary decision/plan API | Manifest |
+| --- | --- | --- |
+| `/crypto-tail` | `decideCryptoTailEntry` | `CRYPTO_TAIL_STRATEGY_MANIFEST` |
+| `/pre-market` | `buildPreMarketEntryPlan` | `PRE_MARKET_STRATEGY_MANIFEST` |
+| `/musk-tweet-count` | `decideMuskTweetCountEntry` | `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` |
+| `/weather-temperature` | `decideWeatherTemperatureEntry` | `WEATHER_TEMPERATURE_STRATEGY_MANIFEST` |
 
-### `CRYPTO_TAIL_STRATEGY_MANIFEST`
+`VIRAE_STRATEGY_CORE_CATALOG` is the machine-readable source for strategy key, module, hosted Auto Trade keys, capability flags, and manifest. Read the installed package version from its `package.json`; it is intentionally not duplicated in the catalog.
 
-Stable identity fields for audit and replay: strategy ID, model version, input schema version, execution policy version, supported assets, and supported intervals.
+## Crypto Tail
 
-### `REFERENCE_CRYPTO_TAIL_CONFIG_V1`
+### Decision and diagnostics
 
-A runnable configuration for examples and paper replay. It is not production calibration or financial advice.
+- `decideCryptoTailEntry(input)` returns `CryptoTailDecisionResult` with `WAIT`, `SKIP`, or `ELIGIBLE`, stable reason code/message, candidate identity, timing, distance, probability/cost estimate, edge, notional, and limit price.
+- `buildCryptoTailGateDiagnostics(input)` returns individual `pass`, `fail`, or `pending` diagnostics for operator/UI use. The decision remains authoritative.
+- `REFERENCE_CRYPTO_TAIL_CONFIG_V1` is a reproducible example/paper configuration, not production calibration.
 
-## Entry decisions
+Calculation helpers include `estimateCryptoTailAllInCost`, `estimateCryptoTailWinProbability`, `requiredBtc15mDistanceBps`, `resolveBtc15mEntryLimitPrice`, `btc15mSpotContradictsSignal`, and `twapWindowSeconds`. The `Btc15m` names are compatibility exports; generic Crypto Tail types and aliases are preferred for new integrations.
 
-### `decideCryptoTailEntry(input)`
+### Execution, exit, and lifecycle
 
-Returns a `CryptoTailDecisionResult` containing the decision, stable reason code, explanation, candidate outcome/token, timing, distance, probability/cost estimate, edge, notional, and limit price.
+- `buildCryptoTailEntryExecutionPlan({ decision, config })` returns a complete bounded entry plan or typed failure.
+- `evaluateCryptoTailChase(input)` decides one bounded replacement price; `buildCryptoTailChaseOrder(plan, chasePrice)` creates the replacement intent.
+- `evaluateCryptoTailExit(params)` returns direction-flip, distance-collapse, held, ended-round, or unavailable-oracle state.
+- `createCryptoTailLifecycleState()` and `reduceCryptoTailLifecycle(state, event)` implement a pure event reducer that emits descriptive commands.
 
-### `buildCryptoTailGateDiagnostics(input)`
-
-Returns individual `pass`, `fail`, or `pending` diagnostics suitable for operator and UI surfaces. Diagnostics explain the snapshot; the decision function remains authoritative.
-
-### Calculation helpers
-
-- `estimateCryptoTailAllInCost(ask)`
-- `estimateCryptoTailWinProbability(params)`
-- `requiredBtc15mDistanceBps(input, secondsToEnd)`
-- `resolveBtc15mEntryLimitPrice(params)`
-- `btc15mSpotContradictsSignal(params)`
-- `twapWindowSeconds(model)`
-
-The `Btc15m` names are compatibility exports. The generic `CryptoTail` decision types and aliases are preferred for new integrations.
-
-## Execution
-
-### `buildCryptoTailEntryExecutionPlan({ decision, config })`
-
-Returns either a complete entry plan or a typed failure reason. A plan includes strategy identity, a limit-order intent, cancel timeout, chase limits, and exit-policy values.
-
-### `evaluateCryptoTailChase(input)`
-
-Determines whether a single bounded chase is eligible and returns the replacement price.
-
-### `buildCryptoTailChaseOrder(plan, chasePrice)`
-
-Builds a replacement order intent without mutating the original plan.
-
-## Exit
-
-### `evaluateCryptoTailExit(params)`
-
-Returns a direction-flip, distance-collapse, held, ended-round, or unavailable-oracle result. It does not submit an exit order.
-
-## Lifecycle
-
-### `createCryptoTailLifecycleState()`
-
-Creates the initial pure state.
-
-### `reduceCryptoTailLifecycle(state, event)`
-
-Returns the next state and zero or more descriptive commands. The reducer does not deduplicate, persist, or execute commands.
-
-## TypeScript types
-
-The package exports complete input, configuration, decision, order-intent, exit, and lifecycle types. Declarations support both classic `moduleResolution: "node"` and modern Node module resolution.
-
-## Compatibility
-
-- Runtime format: CommonJS with Node-compatible ESM interop.
-- Minimum Node version: 20.
-- TypeScript declarations and declaration maps are included.
-- Package subpaths are controlled by `exports`; do not import internal `dist` files.
-
-Any undocumented deep import is unsupported.
+See [Crypto Tail strategy design](./strategy/crypto-tail.md).
 
 ## Pre-M dual ladder
 
-### `buildPreMarketEntryPlan({ round, config })`
+- `normalizePreMarketStrategyConfig(input)` validates mode, side budget, launch/cancel timing, and take-profit bounds.
+- `preMarketPricesForMode(mode)` returns the six cent-rounded prices for Safe, Normal, or Aggressive mode.
+- `buildPreMarketEntryPlan({ round, config })` returns twelve deterministic BUY intents and cancellation deadline, or a typed failure.
+- `buildPreMarketTakeProfitIntents(params)` aggregates reconciled fill rows and returns at most one SELL intent per outcome after the configured delay.
+- `DEFAULT_PRE_MARKET_STRATEGY_CONFIG`, `PRE_MARKET_LADDER_WEIGHTS`, `PRE_MARKET_NORMAL_PRICES`, and `PRE_MARKET_STRATEGY_MANIFEST` are public reference exports.
 
-Returns twelve deterministic BUY intents across Up and Down, or a fail-closed reason when the round, market, token IDs, or launch window are invalid or unavailable. Each intent includes a stable per-round key; the host must namespace it by task/account when uniqueness is global.
+Malformed positions, conflicting token IDs, and quantities below `0.01` share produce no take-profit intent. The host must distinguish this conservative result from confirmed absence of exposure.
 
-### `buildPreMarketTakeProfitIntents(params)`
+See [Pre-M strategy design](./strategy/pre-market.md).
 
-Aggregates multiple ladder fills and builds at most one SELL intent per outcome after the configured delay. Targets use actual net open shares and filled notional, never requested entry size. Malformed positions, conflicting token IDs, and quantities below the package's `0.01`-share output precision do not produce an intent.
+## Musk Tweet Count
 
-### `normalizePreMarketStrategyConfig(input)`
+- `decideMuskTweetCountEntry(params)` applies canonical current/next selection with explicit `nowSec` and returns both evaluations plus one selected generated/rejected candidate.
+- `evaluateMuskTweetStrategy(snapshot, config, nowSec)` exposes every current-market sleeve evaluation.
+- `evaluateMuskTweetNextMarketPreposition(current, next, config, nowSec)` exposes the next-market No setup.
+- `selectMuskEvaluationSnapshots` selects the active and earliest upcoming snapshots.
+- `normalizeMuskTweetStrategyConfig` and `normalizeMuskTweetSimulationConfig` bound external configuration.
+- `resolveMuskTweetPersistentRiskStop` returns a pure persistent task-stop reason from host risk state.
+- `DEFAULT_MUSK_TWEET_STRATEGY_CONFIG`, `MUSK_TWEET_SIMULATION_MATRIX`, and `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` are public.
 
-Validates ladder mode, side budget, launch lead/grace, cancel window, and take-profit bounds. A host remains responsible for venue minimums, persistence, idempotency, signing, cancellation, reconciliation, and risk controls.
+Malformed time values return `INVALID_INPUT`. Stale counters/books, unavailable minimum size, or rejected candidates never authorize execution.
 
-See [Pre-M strategy design](./strategy/pre-market.md) for the exact ladders, configuration bounds, rounding rules, and host lifecycle contract.
+See [Musk Tweet Count strategy design](./strategy/musk-tweet-count.md).
 
-## Musk tweet count
+## Weather Temperature
 
-### `decideMuskTweetCountEntry(params)`
+- `normalizeWeatherTemperatureStrategyConfig({ entryConfig, riskConfig })` applies station, profile, timing, selection, budget, and risk defaults/bounds.
+- `decideWeatherTemperatureEntry({ snapshot, config, nowSec })` returns zero-to-two YES limit intents, per-candidate evaluations, a top-level reason, and typed diagnostics.
+- `evaluateWeatherTemperatureCandidate(config, candidate, context)` exposes one bucket's gate result when timing and forecast dispersion are already known.
+- `weatherTemperatureLocalClock(timezone, now)` and `weatherTemperatureTimingEligible(config, snapshot, clock)` are low-level helpers for validated timezone/date inputs.
+- `DEFAULT_WEATHER_TEMPERATURE_ENTRY_CONFIG`, `DEFAULT_WEATHER_TEMPERATURE_RISK_CONFIG`, `WEATHER_TEMPERATURE_SIGNAL_PROFILES`, `WEATHER_TEMPERATURE_SIMULATION_MATRIX`, `WEATHER_TEMPERATURE_CONFIG_VERSION`, and `WEATHER_TEMPERATURE_STRATEGY_MANIFEST` are public.
 
-Evaluates the current snapshot and optional next snapshot with an explicit `nowSec`, then selects next-market BUY, current-market BUY, invalid input, next rejected, or current rejected in canonical priority order. The result includes both evaluations and a stable selector reason code. Invalid time values fail closed with `reasonCode: 'INVALID_INPUT'`.
+The primary decision validates malformed runtime inputs and fails closed. The normalized risk object is configuration for a stateful host; the pure decision cannot enforce daily/event/task limits without durable state.
 
-### `evaluateMuskTweetStrategy(snapshot, config, nowSec)`
+See [Weather Temperature strategy design](./strategy/weather-temperature.md).
 
-Returns eligible intents, rejected candidates, per-sleeve checks, diagnostics, and an optional typed `inputErrorCode` for the current market. Stale counter or selected-orderbook data always blocks new intents.
+## Common integration rules
 
-### `evaluateMuskTweetNextMarketPreposition(current, next, config, nowSec)`
+All primary strategy functions are synchronous and side-effect free. They do not fetch data or mutate caller input. Time-sensitive primary decisions accept caller-provided time so live and replay behavior can match.
 
-Evaluates the next-market No preposition window without reading wall-clock time. Both current and next counters and the selected next-market orderbook must be fresh.
+Generated keys are stable within the strategy's documented identity scope but do not automatically include account or task. Namespace them before using a database uniqueness constraint that spans multiple users, tasks, or market lifecycles.
 
-### Supporting exports
+Runtime compatibility:
 
-`normalizeMuskTweetStrategyConfig`, `selectMuskEvaluationSnapshots`, `resolveMuskTweetPersistentRiskStop`, `DEFAULT_MUSK_TWEET_STRATEGY_CONFIG`, and `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` are public. See [Musk tweet-count strategy design](./strategy/musk-tweet-count.md).
+- Node.js 20 or newer;
+- CommonJS output with Node-compatible ESM interop;
+- TypeScript declarations and declaration maps;
+- package subpaths controlled by `exports`.
+
+Do not import undocumented internal `dist` paths. See the [integration guide](./integration.md) for persistence, execution, and production safety requirements.
