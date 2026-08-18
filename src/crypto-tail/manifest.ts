@@ -6,6 +6,6 @@ export const CRYPTO_TAIL_STRATEGY_MANIFEST = {
   modelVersion: TAIL_STRATEGY_MODEL_VERSION,
   inputSchemaVersion: 1,
   executionPolicyVersion: 1,
-  supportedAssets: ['BTC', 'ETH'],
+  supportedAssets: ['BTC', 'ETH', 'SOL', 'DOGE', 'XRP', 'BNB'],
   supportedIntervals: ['15m', '1h'],
 } as const;

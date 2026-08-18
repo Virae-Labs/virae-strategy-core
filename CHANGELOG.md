@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.5.0 - 2026-08-18
+
+- Expand the Crypto Tail manifest and public contract to support SOL, DOGE, XRP, and BNB 15-minute Up/Down rounds.
+- Retain BTC and ETH support for both 15-minute and 1-hour profiles while documenting the asset-specific interval boundary.
+
 ## 0.4.0 - 2026-08-18
 
 - Add a simulation-only EV Snipe strategy contract with source-equivalent hit detection, explicit Confirm-hit and Pre-hit semantics, freshness/price/edge gates, deterministic FAK intents, and fee-aware fill/settlement simulation.

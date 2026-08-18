@@ -190,7 +190,7 @@ export type Btc15mGateDiagnostic = {
 };
 
 // Public, asset-agnostic aliases. The implementation was originally built for
-// BTC 15m rounds, but the same contract is used by BTC/ETH 15m and 1h profiles.
+// BTC 15m rounds, but the same contract is used by all registered Crypto Tail profiles.
 export type CryptoTailResolutionPriceModel = Btc15mResolutionPriceModel;
 export type CryptoTailDecision = Btc15mAutoTradeDecision;
 export type CryptoTailEntryWindow = Btc15mEntryWindow;

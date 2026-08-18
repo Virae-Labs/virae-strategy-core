@@ -11,7 +11,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 
 | Strategy | Markets | What the core produces | Highlights |
 | --- | --- | --- | --- |
-| [Crypto Tail](./docs/strategy/crypto-tail.md) | BTC/ETH Up/Down, 15m and 1h | `WAIT` / `SKIP` / `ELIGIBLE`, entry plan, chase, exit, lifecycle commands | Time-and-distance signal, TWAP/spot consistency, spread/depth/risk gates, bounded lifecycle |
+| [Crypto Tail](./docs/strategy/crypto-tail.md) | BTC/ETH/SOL/DOGE/XRP/BNB Up/Down (15m; BTC/ETH also 1h) | `WAIT` / `SKIP` / `ELIGIBLE`, entry plan, chase, exit, lifecycle commands | Time-and-distance signal, TWAP/spot consistency, spread/depth/risk gates, bounded lifecycle |
 | [Pre-M](./docs/strategy/pre-market.md) | BTC 15m Up/Down before market open | 12 dual-sided BUY ladder intents and fill-aware take-profit SELL intents | Safe/Normal/Aggressive ladders, stable per-round keys, explicit cancellation deadline |
 | [Musk Tweet Count](./docs/strategy/musk-tweet-count.md) | Current and next Polymarket tweet-count markets | Sleeve evaluations plus one canonical selected or rejected intent | Low/high-tail No, late directional Yes, lottery Yes, next-market preposition |
 | [Weather Temperature](./docs/strategy/weather-temperature.md) | Daily high/low temperature buckets | Ranked YES limit-order intents and per-bucket evaluations | GFS ensemble probabilities, station-local timing, Strict/Core/Wide profiles, TOP1 or adjacent TOP2 |
@@ -30,7 +30,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 ## Install
 
 ```bash
-npm install --save-exact @viraeai/virae-strategy-core@0.4.0
+npm install --save-exact @viraeai/virae-strategy-core@0.5.0
 ```
 
 Pin exact versions in money-moving systems. Review the [changelog](./CHANGELOG.md) and replay representative fixtures before every upgrade.

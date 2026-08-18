@@ -4,7 +4,7 @@
 
 | Item | Contract |
 | --- | --- |
-| Markets | BTC and ETH binary Up/Down rounds, 15-minute and 1-hour |
+| Markets | BTC, ETH, SOL, DOGE, XRP, and BNB binary Up/Down rounds at 15 minutes; BTC and ETH also at 1 hour |
 | Primary API | `decideCryptoTailEntry` |
 | Outputs | `WAIT`, `SKIP`, or `ELIGIBLE`; gate diagnostics; bounded execution plan |
 | Additional policies | One-shot chase, direction-flip/distance-collapse exit, pure lifecycle reducer |
@@ -36,7 +36,7 @@ const plan = buildCryptoTailEntryExecutionPlan({
 - Model version: `heuristic-v2-twap`
 - Input schema version: `1`
 - Execution policy version: `1`
-- Supported profiles: BTC and ETH, 15-minute and 1-hour rounds
+- Supported profiles: BTC, ETH, SOL, DOGE, XRP, and BNB at 15 minutes; BTC and ETH at 1 hour
 
 The manifest is exported as `CRYPTO_TAIL_STRATEGY_MANIFEST`. Hosts should persist it with decisions and orders so a replay can identify the exact policy family that produced an intent.
 

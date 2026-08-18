@@ -31,7 +31,7 @@ describe('public API contract', () => {
       modelVersion: 'heuristic-v2-twap',
       inputSchemaVersion: 1,
       executionPolicyVersion: 1,
-      supportedAssets: ['BTC', 'ETH'],
+      supportedAssets: ['BTC', 'ETH', 'SOL', 'DOGE', 'XRP', 'BNB'],
       supportedIntervals: ['15m', '1h'],
     });
     expect(JSON.parse(JSON.stringify(root.CRYPTO_TAIL_STRATEGY_MANIFEST)))
