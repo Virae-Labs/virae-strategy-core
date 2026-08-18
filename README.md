@@ -17,13 +17,13 @@ The package turns normalized round, oracle, order-book, risk, and configuration 
 
 Install this package to run the versioned strategy decisions and order-intent generation in your own application. You provide the market data, execution adapter, persistence, reconciliation, wallet integration, and risk controls.
 
-### Run it with Virae Auto Trade
+### Run it with Virae Agents
 
-The same versioned strategy logic published in this package is available for supported strategies through [Virae Auto Trade](https://www.virae.ai/auto-trade). Virae provides the hosted market-data, execution, reconciliation, monitoring, and operational interface, so you can use the strategy without operating that infrastructure yourself.
+The same versioned strategy logic published in this package is available for supported strategies through [Virae Agents](https://www.virae.ai/agents/v/pro?section=strategies). Virae provides the hosted market-data, execution, reconciliation, monitoring, and operational interface, so you can use the strategy without operating that infrastructure yourself.
 
-**[Open Virae Auto Trade →](https://www.virae.ai/auto-trade)**
+**[Open Virae Agents →](https://www.virae.ai/agents/v/pro?section=strategies)**
 
-The library itself remains deterministic and side-effect free: it never accesses a wallet or submits an order. Virae Auto Trade is the separate hosted execution product around the same strategy logic. Strategy availability and Paper/Live support are shown in the Auto Trade interface.
+The library itself remains deterministic and side-effect free: it never accesses a wallet or submits an order. Virae Agents is the separate hosted execution product around the same strategy logic. Strategy availability and Paper/Live support are shown in the Agents interface.
 
 AI agents can use the bundled [`virae-strategy-core` skill](skills/virae-strategy-core/SKILL.md) to discover the installed strategy catalog, evaluate supplied snapshots, and replay them locally. The skill preserves the same execution boundary: it produces decisions and order intents, not submitted orders.
 
@@ -37,7 +37,7 @@ Pin exact versions in systems that can submit real orders. Review the changelog 
 
 ## What the strategy does
 
-The package includes `crypto-tail-directional`, the BTC 15-minute `pre-market` dual-ladder contract, and the Polymarket Musk tweet-count strategy used by Virae Auto Trade. Crypto Tail evaluates a binary **Up/Down** market near the end of a fixed-duration round. In broad terms it:
+The package includes `crypto-tail-directional`, the BTC 15-minute `pre-market` dual-ladder contract, and the Polymarket Musk tweet-count strategy used by Virae Agents. Crypto Tail evaluates a binary **Up/Down** market near the end of a fixed-duration round. In broad terms it:
 
 1. verifies the round, settlement source, oracle, order book, liquidity, and risk state;
 2. measures the reference-price lead from the round start;
