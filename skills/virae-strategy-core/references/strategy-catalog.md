@@ -4,7 +4,7 @@ Treat `VIRAE_STRATEGY_CORE_CATALOG` as the machine-readable source of truth. Run
 
 | Core key | Package module | Virae Auto Trade keys | Local operations |
 | --- | --- | --- | --- |
-| `crypto-tail` | `@viraeai/virae-strategy-core/crypto-tail` | `btc-15m-tail`, `eth-15m-tail`, `btc-1h-tail`, `eth-1h-tail` | Decision, entry intent, replay |
+| `crypto-tail` | `@viraeai/virae-strategy-core/crypto-tail` | BTC, ETH, SOL, DOGE, XRP, and BNB at `15m` and `1h` | Decision, entry intent, replay |
 | `pre-market` | `@viraeai/virae-strategy-core/pre-market` | `btc-15m-premarket` | Entry ladder intents, take-profit intents, replay |
 | `musk-tweet-count` | `@viraeai/virae-strategy-core/musk-tweet-count` | `musk-tweet-count` | Current/next decision, selected intent, risk-stop policy, replay |
 | `weather-temperature` | `@viraeai/virae-strategy-core/weather-temperature` | `weather-temperature` | Per-bucket evaluation, TOP1/adjacent TOP2 intents, replay |

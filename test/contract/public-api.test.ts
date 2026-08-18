@@ -127,7 +127,10 @@ describe('public API contract', () => {
       expect.objectContaining({
         key: 'crypto-tail',
         module: 'crypto-tail',
-        autoTradeStrategyKeys: ['btc-15m-tail', 'eth-15m-tail', 'btc-1h-tail', 'eth-1h-tail'],
+        autoTradeStrategyKeys: [
+          'btc-15m-tail', 'eth-15m-tail', 'sol-15m-tail', 'doge-15m-tail', 'xrp-15m-tail', 'bnb-15m-tail',
+          'btc-1h-tail', 'eth-1h-tail', 'sol-1h-tail', 'doge-1h-tail', 'xrp-1h-tail', 'bnb-1h-tail',
+        ],
         manifest: root.CRYPTO_TAIL_STRATEGY_MANIFEST,
       }),
       expect.objectContaining({

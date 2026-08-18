@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.6.0 - 2026-08-18
+
+- Expand the Crypto Tail host catalog and documented profile boundary so SOL, DOGE, XRP, and BNB are supported at 1 hour as well as 15 minutes.
+
 ## 0.5.0 - 2026-08-18
 
 - Expand the Crypto Tail manifest and public contract to support SOL, DOGE, XRP, and BNB 15-minute Up/Down rounds.
