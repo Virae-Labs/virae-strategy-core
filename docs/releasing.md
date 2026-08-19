@@ -23,17 +23,17 @@ Published npm versions are immutable. Releases should be reproducible from a rev
 
 Use a granular npm token or npm trusted publishing with the narrowest available scope. Never commit `.npmrc` credentials or put tokens in command output.
 
-```bash
-npm publish --access public
-```
-
-After publishing, create and push an annotated tag matching the package version:
+Create and push an annotated tag matching the package version. Pushing the tag triggers `.github/workflows/publish.yml`, which validates the package and publishes it to npm:
 
 ```bash
 git tag -a vX.Y.Z -m "vX.Y.Z"
 git push origin main
 git push origin vX.Y.Z
 ```
+
+The tag must match the version in `package.json` exactly (for example, tag `v0.7.0` publishes package version `0.7.0`). The workflow uses the `NPM_TOKEN` secret from the GitHub Environment named `NPM_TOKEN`.
+
+The workflow can also be started manually from **Actions > Publish to npm > Run workflow**. Select the commit or branch to publish and enter its exact `package.json` version in the `version` field. The same validation and publishing steps apply.
 
 ## Post-publish verification
 
