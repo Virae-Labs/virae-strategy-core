@@ -182,4 +182,28 @@ describe('reduceCryptoTailLifecycle', () => {
     expect(reduceCryptoTailLifecycle(initial, { type: 'EXIT_DECIDED', order: plan().order }))
       .toEqual({ state: initial, commands: [] });
   });
+
+  it('ignores out-of-order, regressing, and overfilled lifecycle events', () => {
+    const initial = createCryptoTailLifecycleState();
+    expect(reduceCryptoTailLifecycle(initial, {
+      type: 'ORDER_FILLED', leg: 'EXIT', cumulativeShares: 1, averagePrice: 0.9,
+    })).toEqual({ state: initial, commands: [] });
+    expect(reduceCryptoTailLifecycle(initial, { type: 'ORDER_CANCELLED', leg: 'EXIT' }))
+      .toEqual({ state: initial, commands: [] });
+
+    const exiting: CryptoTailLifecycleState = {
+      ...initial,
+      status: 'EXIT_SUBMITTED',
+      entryFilledShares: 10,
+      exitFilledShares: 4,
+      exitOrderId: 'exit-1',
+    };
+    for (const event of [
+      { type: 'ORDER_PARTIALLY_FILLED', leg: 'EXIT', cumulativeShares: 3, averagePrice: 0.9 },
+      { type: 'ORDER_FILLED', leg: 'EXIT', cumulativeShares: 11, averagePrice: 0.9 },
+      { type: 'ORDER_FILLED', leg: 'ENTRY', cumulativeShares: 11, averagePrice: 0.92 },
+    ] as const) {
+      expect(reduceCryptoTailLifecycle(exiting, event)).toEqual({ state: exiting, commands: [] });
+    }
+  });
 });

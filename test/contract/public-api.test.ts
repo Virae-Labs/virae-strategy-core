@@ -28,9 +28,9 @@ describe('public API contract', () => {
   it('keeps manifest identity explicit and serializable', () => {
     expect(root.CRYPTO_TAIL_STRATEGY_MANIFEST).toEqual({
       id: 'crypto-tail-directional',
-      modelVersion: 'heuristic-v2-twap',
-      inputSchemaVersion: 1,
-      executionPolicyVersion: 1,
+      modelVersion: 'heuristic-v3-twap',
+      inputSchemaVersion: 2,
+      executionPolicyVersion: 2,
       supportedAssets: ['BTC', 'ETH', 'SOL', 'DOGE', 'XRP', 'BNB'],
       supportedIntervals: ['15m', '1h'],
     });
@@ -43,6 +43,15 @@ describe('public API contract', () => {
     expect(root.buildBtc15mGateDiagnostics).toBe(root.buildCryptoTailGateDiagnostics);
     expect(root.estimateBtc15mAllInCost).toBe(root.estimateCryptoTailAllInCost);
     expect(root.estimateBtc15mWinProbability).toBe(root.estimateCryptoTailWinProbability);
+  });
+
+  it('derives every hosted Crypto Tail profile from the manifest registry', () => {
+    expect(root.CRYPTO_TAIL_PROFILE_KEYS).toEqual([
+      'btc-15m-tail', 'eth-15m-tail', 'sol-15m-tail', 'doge-15m-tail', 'xrp-15m-tail', 'bnb-15m-tail',
+      'btc-1h-tail', 'eth-1h-tail', 'sol-1h-tail', 'doge-1h-tail', 'xrp-1h-tail', 'bnb-1h-tail',
+    ]);
+    expect(root.VIRAE_STRATEGY_CORE_CATALOG[0].autoTradeStrategyKeys)
+      .toBe(root.CRYPTO_TAIL_PROFILE_KEYS);
   });
 
   it('exports the Pre-M strategy surface from root and its focused subpath', () => {

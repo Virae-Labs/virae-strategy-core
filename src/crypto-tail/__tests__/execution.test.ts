@@ -32,7 +32,7 @@ describe('buildCryptoTailEntryExecutionPlan', () => {
       ok: true,
       plan: expect.objectContaining({
         strategyId: 'crypto-tail-directional',
-        modelVersion: 'heuristic-v2-twap',
+        modelVersion: 'heuristic-v3-twap',
         order: expect.objectContaining({
           leg: 'ENTRY',
           side: 'BUY',
@@ -61,6 +61,8 @@ describe('buildCryptoTailEntryExecutionPlan', () => {
     ['limitPrice', 0],
     ['notionalUsd', null],
     ['notionalUsd', 0],
+    ['notionalUsd', Number.POSITIVE_INFINITY],
+    ['limitPrice', Number.NaN],
   ] as const)('rejects an incomplete eligible payload: %s=%s', (field, value) => {
     expect(buildCryptoTailEntryExecutionPlan({
       decision: { ...eligibleDecision(), [field]: value },
@@ -132,6 +134,10 @@ describe('evaluateCryptoTailChase', () => {
     [{ alreadyChased: true }, 'ALREADY_CHASED'],
     [{ maxChaseTicks: 0 }, 'CHASE_DISABLED'],
     [{ originalPrice: Number.NaN }, 'ORIGINAL_PRICE_UNKNOWN'],
+    [{ tickSize: Number.NaN }, 'CHASE_INPUT_INVALID'],
+    [{ askCap: Number.POSITIVE_INFINITY }, 'CHASE_INPUT_INVALID'],
+    [{ cancelAfterMs: Number.NaN }, 'CHASE_INPUT_INVALID'],
+    [{ nowSec: Number.NaN }, 'CHASE_INPUT_INVALID'],
     [{ roundEndSec: null }, 'ROUND_END_UNKNOWN'],
     [{ nowSec: 111 }, 'INSUFFICIENT_TIME_REMAINING'],
   ] as const)('fails closed for chase input %o', (overrides, reason) => {
@@ -157,5 +163,15 @@ describe('evaluateCryptoTailChase', () => {
     const chase = buildCryptoTailChaseOrder(result.plan, 0.93);
     expect(chase).toMatchObject({ price: 0.93, shares: 5.38, reasonCode: 'ENTRY_CHASE' });
     expect(result.plan.order.price).toBe(0.92);
+  });
+
+  it('rejects a non-finite replacement price', () => {
+    const result = buildCryptoTailEntryExecutionPlan({
+      decision: eligibleDecision(),
+      config: REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+    });
+    if (!result.ok) throw new Error('expected plan');
+    expect(() => buildCryptoTailChaseOrder(result.plan, Number.NaN))
+      .toThrow('Crypto Tail chase price must be finite and between 0 and 1.');
   });
 });

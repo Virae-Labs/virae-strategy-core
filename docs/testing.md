@@ -59,6 +59,8 @@ Avoid relying on wall-clock time, network calls, random IDs, or mutable global c
 
 Before a behavior release, compare the old and new package over a fixed corpus and explicitly review every changed decision, reason code, price, size, and transition.
 
+Committed replay corpora live under `fixtures/replay/` and are included in the npm artifact. `test/replay/versioned-corpus.test.ts` applies their documented overrides to a normalized base snapshot and locks the expected output to the manifest versions recorded in each corpus.
+
 ## Coverage policy
 
 Coverage thresholds in `jest.config.cjs` prevent large untested regressions. Coverage is a floor, not evidence that a trading policy is correct. Boundary tests, replay fixtures, and host integration tests remain mandatory.

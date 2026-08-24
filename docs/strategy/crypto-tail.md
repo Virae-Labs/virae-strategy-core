@@ -33,9 +33,9 @@ const plan = buildCryptoTailEntryExecutionPlan({
 ## Status
 
 - Strategy ID: `crypto-tail-directional`
-- Model version: `heuristic-v2-twap`
-- Input schema version: `1`
-- Execution policy version: `1`
+- Model version: `heuristic-v3-twap`
+- Input schema version: `2`
+- Execution policy version: `2`
 - Supported profiles: BTC, ETH, SOL, DOGE, XRP, and BNB at 15 minutes and 1 hour
 
 The manifest is exported as `CRYPTO_TAIL_STRATEGY_MANIFEST`. Hosts should persist it with decisions and orders so a replay can identify the exact policy family that produced an intent.
@@ -57,7 +57,7 @@ The policy consumes an immutable snapshot:
 - **Global controls:** live-trading permission and optional notional cap.
 - **Configuration:** entry, execution, exit, and risk thresholds.
 
-The caller owns normalization and freshness. Passing `fresh: true` is an assertion made by the caller; the package does not independently verify a timestamp or contact an oracle.
+The caller owns normalization and freshness. Passing `fresh: true` is an assertion made by the caller; the package does not independently verify a timestamp or contact an oracle. The core still validates every execution-relevant numeric field at runtime and returns `INVALID_INPUT` rather than allowing `NaN`, infinities, or invalid bounds to pass through comparisons.
 
 ## Signal
 
@@ -70,6 +70,8 @@ candidateOutcome = delta >= 0 ? Up : Down
 ```
 
 The selected token is the token matching `candidateOutcome`. A missing token fails closed.
+
+An exact zero distance does not establish either direction. It returns `WAIT` with `SIGNAL_DISTANCE_ZERO`; the time component cannot turn an absent signal into an eligible entry.
 
 For a Chainlink TWAP-style resolution model, `Pt` is expected to represent the caller's current TWAP-compatible reference. The optional live spot point is used only by the consistency gate.
 
@@ -88,9 +90,10 @@ For a Chainlink TWAP-style resolution model, `Pt` is expected to represent the c
 9. Ask exists, is fresh, below `1.00`, and inside the configured price floor/cap.
 10. Spread exists and is within both target and hard limits.
 11. Duplicate-round and risk stops are clear.
-12. The notional produces at least the venue minimum number of shares.
-13. Top ask depth covers `notionalUsd * depthMultiplier`.
-14. Optional estimated-edge gate passes.
+12. A finite, marketable, tick-aligned final limit price exists within the ask cap.
+13. The notional at that final price produces at least the venue minimum number of shares.
+14. Top ask depth covers `notionalUsd * depthMultiplier`.
+15. Optional estimated-edge gate passes using the final limit price.
 
 The result is `WAIT`, `SKIP`, or `ELIGIBLE`. `WAIT` is used when the same round may reasonably become eligible on a later fresh snapshot. `SKIP` means the current evaluation should not submit an order. Neither value authorizes a side effect.
 
@@ -137,7 +140,7 @@ The gate is disabled in the reference preset. A missing spot point does not crea
 
 ## Limit-price and size policy
 
-The eligible limit price begins at best ask. If `entryAskOffsetTicks > 0` and a positive tick size is available, the policy adds the configured ticks, snaps to the tick grid, and clamps to `askCap`.
+The eligible limit price begins at best ask. If `entryAskOffsetTicks > 0` and a positive tick size is available, the policy adds the configured ticks, rounds upward to a marketable tick, and floors the ask cap to the highest allowed tick. Minimum shares, estimated cost, and edge are then calculated from this final price.
 
 The execution plan calculates shares as:
 
@@ -176,7 +179,7 @@ Stale/missing oracle data and an ended round return no exit command. This avoids
 - `CANCEL_ORDER`;
 - `STOP_NEW_ENTRIES`.
 
-Commands are descriptions, not side effects. A host must persist event identity, deduplicate commands, submit through a venue adapter, and feed confirmed events back to the reducer. Partial exits remain open until cumulative exit shares cover the entered position.
+Commands are descriptions, not side effects. A host must persist event identity, deduplicate commands, submit through a venue adapter, and feed confirmed events back to the reducer. Partial exits remain open until cumulative exit shares cover the entered position. Invalid-state fills and cancellations, non-finite prices or shares, regressing cumulative fills, and exits above entered shares are ignored without mutating state or emitting commands.
 
 ## Reference configuration
 
@@ -194,5 +197,7 @@ The host must resolve the exact market, confirm settlement/oracle equivalence, c
 - The probability estimate is not statistically calibrated in this repository.
 - Risk inputs are snapshots; the host must serialize or otherwise protect concurrent submissions.
 - A deterministic replay proves reproducibility, not profitability.
+
+The public package includes `fixtures/replay/crypto-tail-safety-v0.7.0.json`, which locks the eligible baseline, zero-distance fail-closed behavior, and final-price minimum-share behavior for host replay.
 
 Changes to formulas, gate order, reason-code meaning, size rounding, or lifecycle transitions are behavior changes and require tests, changelog notes, and an appropriate version increment.

@@ -73,6 +73,14 @@ function transition(
   return { state: { ...state, ...patch }, commands };
 }
 
+function validFill(event: Extract<CryptoTailLifecycleEvent, { type: 'ORDER_PARTIALLY_FILLED' | 'ORDER_FILLED' }>): boolean {
+  return Number.isFinite(event.cumulativeShares)
+    && event.cumulativeShares > 0
+    && Number.isFinite(event.averagePrice)
+    && event.averagePrice > 0
+    && event.averagePrice < 1;
+}
+
 /**
  * Pure lifecycle reducer. Returned commands are descriptions that a durable,
  * idempotent host adapter must validate and execute.
@@ -88,6 +96,7 @@ export function reduceCryptoTailLifecycle(
     ]);
   }
   if (event.type === 'ORDER_ACCEPTED') {
+    if (!event.orderId.trim()) return transition(state, {});
     if (event.leg === 'ENTRY' && ['ENTRY_PLANNED', 'ENTRY_SUBMITTED'].includes(state.status)) {
       return transition(state, { status: 'ENTRY_SUBMITTED', entryOrderId: event.orderId });
     }
@@ -97,12 +106,22 @@ export function reduceCryptoTailLifecycle(
     return transition(state, {});
   }
   if (event.type === 'ORDER_PARTIALLY_FILLED' || event.type === 'ORDER_FILLED') {
+    if (!validFill(event)) return transition(state, {});
     if (event.leg === 'ENTRY') {
+      if (!['ENTRY_PLANNED', 'ENTRY_SUBMITTED', 'ENTRY_PARTIALLY_FILLED'].includes(state.status)
+        || event.cumulativeShares + Number.EPSILON < state.entryFilledShares) {
+        return transition(state, {});
+      }
       return transition(state, {
         status: event.type === 'ORDER_FILLED' ? 'POSITION_OPEN' : 'ENTRY_PARTIALLY_FILLED',
         entryFilledShares: event.cumulativeShares,
         averageEntryPrice: event.averagePrice,
       });
+    }
+    if (!['EXIT_PLANNED', 'EXIT_SUBMITTED'].includes(state.status)
+      || event.cumulativeShares + Number.EPSILON < state.exitFilledShares
+      || event.cumulativeShares > state.entryFilledShares + Number.EPSILON) {
+      return transition(state, {});
     }
     const fullyExited = event.cumulativeShares + Number.EPSILON >= state.entryFilledShares;
     return transition(state, {
@@ -125,6 +144,9 @@ export function reduceCryptoTailLifecycle(
   }
   if (event.type === 'ORDER_CANCELLED') {
     if (event.leg === 'ENTRY') {
+      if (!['ENTRY_PLANNED', 'ENTRY_SUBMITTED', 'ENTRY_PARTIALLY_FILLED'].includes(state.status)) {
+        return transition(state, {});
+      }
       return transition(state, {
         status: state.entryFilledShares > 0
           ? 'POSITION_OPEN'
@@ -132,13 +154,22 @@ export function reduceCryptoTailLifecycle(
         entryOrderId: null,
       });
     }
+    if (!['EXIT_PLANNED', 'EXIT_SUBMITTED'].includes(state.status)) return transition(state, {});
     return transition(state, {
       status: state.entryFilledShares > state.exitFilledShares ? 'POSITION_OPEN' : 'COMPLETED',
       exitOrderId: null,
     });
   }
   if (event.type === 'EXIT_DECIDED') {
-    if (state.status !== 'POSITION_OPEN') return transition(state, {});
+    const residualShares = state.entryFilledShares - state.exitFilledShares;
+    if (state.status !== 'POSITION_OPEN'
+      || event.order.leg !== 'EXIT'
+      || event.order.side !== 'SELL'
+      || !Number.isFinite(event.order.price)
+      || !(event.order.price > 0 && event.order.price < 1)
+      || !Number.isFinite(event.order.shares)
+      || !(event.order.shares > 0)
+      || event.order.shares > residualShares + Number.EPSILON) return transition(state, {});
     return transition(state, { status: 'EXIT_PLANNED' }, [
       { type: 'PLACE_ORDER', order: event.order },
     ]);

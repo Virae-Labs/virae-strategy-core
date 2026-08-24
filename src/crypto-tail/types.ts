@@ -1,6 +1,6 @@
 export const BTC_15M_AUTO_TRADE_DEFINITION_ID = 'polymarket-btc-15m-tail-directional';
 export const BTC_15M_AUTO_TRADE_CONTROL_KEY = 'btc-15m-tail';
-export const TAIL_STRATEGY_MODEL_VERSION = 'heuristic-v2-twap';
+export const TAIL_STRATEGY_MODEL_VERSION = 'heuristic-v3-twap';
 
 export type Btc15mResolutionPriceModel =
   | { kind: 'chainlink-twap'; asset: string; windowSeconds: 30 | 60; configId: string | null }
@@ -164,9 +164,49 @@ export type Btc15mDecisionInput = {
   global: Btc15mGlobalControl;
 };
 
+export type CryptoTailEntryReasonCode =
+  | 'INVALID_INPUT'
+  | 'ROUND_UNAVAILABLE'
+  | 'ROUND_METADATA_STALE'
+  | 'SETTLEMENT_SOURCE_UNCONFIRMED'
+  | 'MARKET_NOT_ACTIVE'
+  | 'MARKET_NOT_ACCEPTING_ORDERS'
+  | 'ORDERBOOK_DISABLED'
+  | 'LIQUIDITY_TOO_LOW'
+  | 'BEFORE_DECISION_WINDOW'
+  | 'AFTER_ENTRY_WINDOW'
+  | 'CHAINLINK_PRICE_MISSING'
+  | 'CHAINLINK_STALE'
+  | 'TOKEN_UNAVAILABLE'
+  | 'NO_THRESHOLD_FOR_WINDOW'
+  | 'SIGNAL_DISTANCE_ZERO'
+  | 'DISTANCE_TOO_SMALL'
+  | 'DISTANCE_GATE_TOO_LOW'
+  | 'ABSOLUTE_DISTANCE_TOO_LOW'
+  | 'SIGNAL_MOMENTUM_CONTRADICTION'
+  | 'ORDERBOOK_ASK_MISSING'
+  | 'ORDERBOOK_STALE'
+  | 'ASK_ONE_DOLLAR'
+  | 'ASK_BELOW_ENTRY_FLOOR'
+  | 'ASK_ABOVE_ENTRY_CAP'
+  | 'SPREAD_UNAVAILABLE'
+  | 'SPREAD_TOO_WIDE'
+  | 'SPREAD_ABOVE_TARGET'
+  | 'ROUND_ALREADY_EXECUTED'
+  | 'TASK_NET_LOSS_STOP'
+  | 'TASK_NET_PROFIT_STOP'
+  | 'CONSECUTIVE_LOSS_STOP'
+  | 'DAILY_LOSS_STOP'
+  | 'DAILY_TRADE_LIMIT'
+  | 'ENTRY_PRICE_UNAVAILABLE'
+  | 'LIMIT_ORDER_SIZE_BELOW_MARKET_MINIMUM'
+  | 'ORDERBOOK_DEPTH_TOO_THIN'
+  | 'EDGE_TOO_SMALL'
+  | 'ENTRY_READY';
+
 export type Btc15mDecisionResult = {
   decision: Btc15mAutoTradeDecision;
-  reasonCode: string;
+  reasonCode: CryptoTailEntryReasonCode;
   reasonMessage: string;
   candidateOutcome: 'Up' | 'Down' | null;
   selectedTokenId: string | null;

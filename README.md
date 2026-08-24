@@ -30,7 +30,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 ## Install
 
 ```bash
-npm install --save-exact @viraeai/virae-strategy-core@0.6.0
+npm install --save-exact @viraeai/virae-strategy-core@0.7.0
 ```
 
 Pin exact versions in money-moving systems. Review the [changelog](./CHANGELOG.md) and replay representative fixtures before every upgrade.

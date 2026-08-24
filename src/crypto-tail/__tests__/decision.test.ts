@@ -66,6 +66,68 @@ function baseInput(overrides: Partial<Btc15mDecisionInput> = {}): Btc15mDecision
 }
 
 describe('decideBtc15mTailEntry', () => {
+  it('fails closed on non-finite market and configuration values', () => {
+    expect(decideBtc15mTailEntry(baseInput({
+      orderbook: { ...baseInput().orderbook, bestAsk: Number.NaN },
+    }))).toMatchObject({ decision: 'SKIP', reasonCode: 'INVALID_INPUT', limitPrice: null });
+    expect(decideBtc15mTailEntry(baseInput({
+      config: {
+        ...baseInput().config,
+        entry: { ...baseInput().config.entry, maxSpread: Number.POSITIVE_INFINITY },
+      },
+    }))).toMatchObject({ decision: 'SKIP', reasonCode: 'INVALID_INPUT' });
+    expect(buildBtc15mGateDiagnostics(baseInput({
+      orderbook: { ...baseInput().orderbook, bestAsk: Number.NaN },
+    }))).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'input_valid', status: 'fail' }),
+    ]));
+  });
+
+  it('does not infer a direction when the reference price has zero distance', () => {
+    const input = baseInput();
+    expect(decideBtc15mTailEntry({
+      ...input,
+      nowSec: input.round!.roundEndSec - 4,
+      chainlink: { ...input.chainlink, currentPrice: input.chainlink.startPrice },
+    })).toMatchObject({
+      decision: 'WAIT',
+      reasonCode: 'SIGNAL_DISTANCE_ZERO',
+      distanceBps: 0,
+    });
+  });
+
+  it('checks venue minimum shares against the final offset limit price', () => {
+    const input = baseInput();
+    expect(decideBtc15mTailEntry({
+      ...input,
+      round: { ...input.round!, orderMinSize: 10.1 },
+      orderbook: { ...input.orderbook, bestAsk: 0.49, bestBid: 0.485, tickSize: 0.01 },
+      config: {
+        ...input.config,
+        entry: {
+          ...input.config.entry,
+          minEntryAsk: 0.1,
+          askCap: 0.6,
+          edgeGateEnabled: false,
+          entryAskOffsetTicks: 1,
+        },
+      },
+    })).toMatchObject({
+      decision: 'SKIP',
+      reasonCode: 'LIMIT_ORDER_SIZE_BELOW_MARKET_MINIMUM',
+      limitPrice: 0.5,
+    });
+  });
+
+  it('keeps an off-grid ask cap from producing an off-grid limit price', () => {
+    expect(resolveBtc15mEntryLimitPrice({
+      bestAsk: 0.65,
+      offsetTicks: 1,
+      tickSize: 0.01,
+      askCap: 0.655,
+    })).toBe(0.65);
+  });
+
   it('rejects rounds without confirmed Chainlink BTC/USD settlement metadata', () => {
     const input = baseInput({
       round: {

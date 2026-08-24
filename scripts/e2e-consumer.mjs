@@ -65,6 +65,7 @@ try {
     'docs/strategy/ev-snipe.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
+    'fixtures/replay/crypto-tail-safety-v0.7.0.json',
     'skills/virae-strategy-core/SKILL.md',
     'skills/virae-strategy-core/agents/openai.yaml',
     'skills/virae-strategy-core/scripts/list-strategies.mjs',
@@ -109,7 +110,7 @@ const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
 assert.equal(root.decideCryptoTailEntry, subpath.decideCryptoTailEntry);
-assert.equal(root.CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion, 1);
+assert.equal(root.CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion, 2);
 assert.equal(root.buildPreMarketEntryPlan, preMarket.buildPreMarketEntryPlan);
 assert.equal(preMarket.PRE_MARKET_STRATEGY_MANIFEST.executionPolicyVersion, 1);
 assert.equal(root.decideMuskTweetCountEntry, muskTweetCount.decideMuskTweetCountEntry);

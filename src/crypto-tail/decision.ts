@@ -1,6 +1,11 @@
-import type { Btc15mDecisionInput, Btc15mDecisionResult, Btc15mGateDiagnostic } from './types';
+import type {
+  Btc15mDecisionInput,
+  Btc15mDecisionResult,
+  Btc15mGateDiagnostic,
+  CryptoTailEntryReasonCode,
+} from './types';
 
-function skip(reasonCode: string, reasonMessage: string, extras: Partial<Btc15mDecisionResult> = {}): Btc15mDecisionResult {
+function skip(reasonCode: CryptoTailEntryReasonCode, reasonMessage: string, extras: Partial<Btc15mDecisionResult> = {}): Btc15mDecisionResult {
   return {
     decision: 'SKIP',
     reasonCode,
@@ -18,7 +23,7 @@ function skip(reasonCode: string, reasonMessage: string, extras: Partial<Btc15mD
   };
 }
 
-function wait(reasonCode: string, reasonMessage: string, extras: Partial<Btc15mDecisionResult> = {}): Btc15mDecisionResult {
+function wait(reasonCode: CryptoTailEntryReasonCode, reasonMessage: string, extras: Partial<Btc15mDecisionResult> = {}): Btc15mDecisionResult {
   return {
     ...skip(reasonCode, reasonMessage, extras),
     decision: 'WAIT',
@@ -44,9 +49,136 @@ export function resolveBtc15mEntryLimitPrice(params: {
 }): number {
   const { bestAsk, offsetTicks, tickSize, askCap } = params;
   if (!(offsetTicks > 0) || tickSize == null || !(tickSize > 0)) return bestAsk;
-  const raw = Math.min(bestAsk + offsetTicks * tickSize, askCap);
-  const snapped = Number((Math.round(raw / tickSize) * tickSize).toFixed(6));
-  return Math.min(snapped, askCap);
+  const decimals = Math.max(0, Math.min(6, String(tickSize).split('.')[1]?.length ?? 0));
+  const highestAllowedTick = Math.floor((askCap + Number.EPSILON) / tickSize) * tickSize;
+  const desired = bestAsk + offsetTicks * tickSize;
+  const marketableTick = Math.ceil((desired - Number.EPSILON) / tickSize) * tickSize;
+  return Number(Math.min(marketableTick, highestAllowedTick).toFixed(decimals));
+}
+
+function finite(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function finiteOptional(value: unknown): boolean {
+  return value == null || finite(value);
+}
+
+function validateCryptoTailInput(input: Btc15mDecisionInput): string | null {
+  if (!input || typeof input !== 'object') return 'Input must be an object.';
+  if (!finite(input.nowSec)) return 'nowSec must be finite.';
+  if (!input.config?.entry || !input.config.risk || !input.chainlink || !input.orderbook || !input.risk || !input.global) {
+    return 'Input is missing config, market data, risk, or global controls.';
+  }
+
+  const entry = input.config.entry;
+  const entryNumbers = [
+    entry.maxNotionalUsd, entry.askCap, entry.minEntryAsk, entry.minEdgeBps,
+    entry.minDistancePercent, entry.minAbsoluteDistanceUsd, entry.distanceCollapseStopPercent,
+    entry.consistencyMinContradictionBps, entry.orderbookStopSlippageBps,
+    entry.entryWindowStartSeconds, entry.entryWindowEndSeconds, entry.maxSpread,
+    entry.maxSpreadHard, entry.minLiquidityClob, entry.depthMultiplier, entry.cancelAfterMs,
+    entry.maxChaseTicks, entry.entryAskOffsetTicks, entry.hedgeMaxPairCost,
+  ];
+  if (entryNumbers.some((value) => !finite(value))) return 'Entry configuration contains a non-finite number.';
+  if (!(entry.maxNotionalUsd > 0)
+    || !(entry.askCap > 0 && entry.askCap < 1)
+    || !(entry.minEntryAsk >= 0 && entry.minEntryAsk <= entry.askCap)
+    || entry.minEdgeBps < 0
+    || entry.minDistancePercent < 0
+    || entry.minAbsoluteDistanceUsd < 0
+    || entry.distanceCollapseStopPercent < 0
+    || entry.distanceCollapseStopPercent > 100
+    || entry.consistencyMinContradictionBps < 0
+    || entry.entryWindowStartSeconds < entry.entryWindowEndSeconds
+    || entry.entryWindowEndSeconds < 0
+    || entry.maxSpread < 0
+    || entry.maxSpreadHard < entry.maxSpread
+    || entry.minLiquidityClob < 0
+    || !(entry.depthMultiplier > 0)
+    || !(entry.cancelAfterMs > 0)
+    || !Number.isInteger(entry.maxChaseTicks)
+    || entry.maxChaseTicks < 0
+    || !Number.isInteger(entry.entryAskOffsetTicks)
+    || entry.entryAskOffsetTicks < 0
+    || !(entry.hedgeMaxPairCost > 0 && entry.hedgeMaxPairCost < 2)
+    || !finiteOptional(entry.takeProfitPrice)
+    || !finiteOptional(entry.orderbookStopPrice)) {
+    return 'Entry configuration is outside supported bounds.';
+  }
+  if (!Array.isArray(entry.entryWindows) || entry.entryWindows.length === 0
+    || entry.entryWindows.some((window) => !finite(window?.secondsToEndMin)
+      || !finite(window?.minDistanceBps)
+      || window.secondsToEndMin < 0
+      || window.minDistanceBps < 0)) {
+    return 'Entry windows are missing or invalid.';
+  }
+
+  const riskConfig = input.config.risk;
+  if (![riskConfig.dailyLossStopUsd, riskConfig.consecutiveLossStop, riskConfig.maxTradesPerDay]
+    .every(finite)
+    || !finiteOptional(riskConfig.maxTaskNetLossUsd)
+    || !finiteOptional(riskConfig.maxTaskNetProfitUsd)
+    || !(riskConfig.dailyLossStopUsd > 0)
+    || !Number.isInteger(riskConfig.consecutiveLossStop)
+    || riskConfig.consecutiveLossStop < 1
+    || !Number.isInteger(riskConfig.maxTradesPerDay)
+    || riskConfig.maxTradesPerDay < 1
+    || (riskConfig.maxTaskNetLossUsd != null && !(riskConfig.maxTaskNetLossUsd > 0))
+    || (riskConfig.maxTaskNetProfitUsd != null && !(riskConfig.maxTaskNetProfitUsd > 0))) {
+    return 'Risk configuration is invalid.';
+  }
+
+  if (!finiteOptional(input.global.maxNotionalUsd)
+    || (input.global.maxNotionalUsd != null && !(input.global.maxNotionalUsd > 0))) {
+    return 'Global notional cap is invalid.';
+  }
+  if (input.round) {
+    if (![input.round.roundStartSec, input.round.roundEndSec].every(finite)
+      || input.round.roundEndSec <= input.round.roundStartSec
+      || !finiteOptional(input.round.orderMinSize)
+      || !finiteOptional(input.round.liquidityClob)
+      || (input.round.orderMinSize != null && !(input.round.orderMinSize > 0))
+      || (input.round.liquidityClob != null && input.round.liquidityClob < 0)) {
+      return 'Round numeric fields are invalid.';
+    }
+  }
+  const oracle = input.chainlink;
+  if (!finiteOptional(oracle.startPrice)
+    || !finiteOptional(oracle.currentPrice)
+    || !finiteOptional(oracle.spotPrice)
+    || !finiteOptional(oracle.currentPointTs)
+    || !finiteOptional(oracle.spotPointTs)
+    || (oracle.startPrice != null && !(oracle.startPrice > 0))
+    || (oracle.currentPrice != null && !(oracle.currentPrice > 0))
+    || (oracle.spotPrice != null && !(oracle.spotPrice > 0))) {
+    return 'Oracle numeric fields are invalid.';
+  }
+  const book = input.orderbook;
+  if (!finiteOptional(book.bestAsk)
+    || !finiteOptional(book.bestBid)
+    || !finiteOptional(book.spread)
+    || !finiteOptional(book.topDepthUsd)
+    || !finiteOptional(book.topBidDepthUsd)
+    || !finiteOptional(book.tickSize)
+    || (book.bestAsk != null && !(book.bestAsk > 0 && book.bestAsk < 1))
+    || (book.bestBid != null && !(book.bestBid >= 0 && book.bestBid < 1))
+    || (book.spread != null && book.spread < 0)
+    || (book.topDepthUsd != null && book.topDepthUsd < 0)
+    || (book.topBidDepthUsd != null && book.topBidDepthUsd < 0)
+    || (book.tickSize != null && !(book.tickSize > 0 && book.tickSize < 1))) {
+    return 'Orderbook numeric fields are invalid.';
+  }
+  const risk = input.risk;
+  const riskNumbers = [risk.dailyLossUsd, risk.taskNetLossUsd, risk.consecutiveLosses, risk.tradesToday];
+  if (riskNumbers.some((value) => !finite(value) || value < 0)
+    || !finiteOptional(risk.taskNetPnlUsd)
+    || !finiteOptional(risk.taskNetAfterFeePnlUsd)
+    || !finiteOptional(risk.openExposureUsd)
+    || !finiteOptional(risk.executionDataIncompleteCount)) {
+    return 'Risk state contains invalid numeric values.';
+  }
+  return null;
 }
 
 const MAX_TIME_COMPONENT = 0.05;
@@ -148,6 +280,9 @@ function fmt(value: number | null | undefined, digits = 3): string {
 
 /** Builds an explanatory gate snapshot; the decision function remains authoritative. */
 export function buildBtc15mGateDiagnostics(input: Btc15mDecisionInput): Btc15mGateDiagnostic[] {
+  if (!input || typeof input !== 'object' || !input.global) {
+    return [gate('input_valid', 'Normalized input valid', 'fail', 'complete normalized input', 'missing input or global controls')];
+  }
   const strategyLabel = input.strategyLabel ?? 'BTC 15m';
   const settlementPairLabel = input.settlementPairLabel ?? 'BTC/USD';
   const diagnostics: Btc15mGateDiagnostic[] = [
@@ -159,6 +294,11 @@ export function buildBtc15mGateDiagnostics(input: Btc15mDecisionInput): Btc15mGa
       `live config ${yesNo(input.global.liveTradingEnabled)}`,
     ),
   ];
+  const inputError = validateCryptoTailInput(input);
+  if (inputError) {
+    diagnostics.push(gate('input_valid', 'Normalized input valid', 'fail', 'finite values within supported bounds', inputError));
+    return diagnostics;
+  }
 
   if (!input.round) {
     diagnostics.push(gate('round_available', 'Current round resolved', 'pending', `active ${strategyLabel} Polymarket round`, 'round metadata unavailable'));
@@ -335,6 +475,8 @@ export function buildBtc15mGateDiagnostics(input: Btc15mDecisionInput): Btc15mGa
  * This function performs no I/O and never submits an order.
  */
 export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisionResult {
+  const inputError = validateCryptoTailInput(input);
+  if (inputError) return skip('INVALID_INPUT', inputError);
   const strategyLabel = input.strategyLabel ?? 'BTC 15m';
   const settlementPairLabel = input.settlementPairLabel ?? 'BTC/USD';
   if (!input.round) {
@@ -387,6 +529,14 @@ export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisio
   }
   if (requiredDistance == null) {
     return skip('NO_THRESHOLD_FOR_WINDOW', 'No configured distance threshold covers the current entry window.', {
+      secondsToEnd,
+      distanceBps,
+      candidateOutcome,
+      selectedTokenId,
+    });
+  }
+  if (distanceBps === 0) {
+    return wait('SIGNAL_DISTANCE_ZERO', 'No directional entry is allowed while the reference price equals the round start price.', {
       secondsToEnd,
       distanceBps,
       candidateOutcome,
@@ -472,6 +622,12 @@ export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisio
   if (input.config.risk.maxTaskNetLossUsd != null && input.risk.taskNetLossUsd >= input.config.risk.maxTaskNetLossUsd) {
     return skip('TASK_NET_LOSS_STOP', 'Task net loss stop is active.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
   }
+  const taskNetPnlUsd = input.risk.taskNetAfterFeePnlUsd ?? input.risk.taskNetPnlUsd;
+  if (input.config.risk.maxTaskNetProfitUsd != null
+    && taskNetPnlUsd != null
+    && taskNetPnlUsd >= input.config.risk.maxTaskNetProfitUsd) {
+    return skip('TASK_NET_PROFIT_STOP', 'Task net profit stop is active.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
+  }
   if (input.risk.consecutiveLosses >= input.config.risk.consecutiveLossStop) {
     return skip('CONSECUTIVE_LOSS_STOP', 'Consecutive loss stop is active.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
   }
@@ -482,11 +638,25 @@ export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisio
     return skip('DAILY_TRADE_LIMIT', 'Daily trade limit reached.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
   }
 
-  const estimatedAllInCost = estimateBtc15mAllInCost(bestAsk);
   const notionalUsd = input.global.maxNotionalUsd == null
     ? input.config.entry.maxNotionalUsd
     : Math.min(input.config.entry.maxNotionalUsd, input.global.maxNotionalUsd);
-  const limitOrderShares = Math.ceil(notionalUsd / bestAsk * 100) / 100;
+  const limitPrice = resolveBtc15mEntryLimitPrice({
+    bestAsk,
+    offsetTicks: input.config.entry.entryAskOffsetTicks,
+    tickSize: input.orderbook.tickSize ?? null,
+    askCap: input.config.entry.askCap,
+  });
+  if (!Number.isFinite(limitPrice) || limitPrice < bestAsk || limitPrice > input.config.entry.askCap) {
+    return wait('ENTRY_PRICE_UNAVAILABLE', 'No marketable tick-aligned entry price is available within the configured ask cap.', {
+      secondsToEnd,
+      distanceBps,
+      candidateOutcome,
+      selectedTokenId,
+    });
+  }
+  const estimatedAllInCost = estimateBtc15mAllInCost(limitPrice);
+  const limitOrderShares = Math.ceil(notionalUsd / limitPrice * 100) / 100;
   if (input.round.orderMinSize != null && limitOrderShares < input.round.orderMinSize) {
     return skip(
       'LIMIT_ORDER_SIZE_BELOW_MARKET_MINIMUM',
@@ -497,7 +667,7 @@ export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisio
       candidateOutcome,
       selectedTokenId,
       notionalUsd,
-      limitPrice: bestAsk,
+      limitPrice,
       },
     );
   }
@@ -533,17 +703,10 @@ export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisio
         estimatedAllInCost,
         edge,
         notionalUsd,
-        limitPrice: bestAsk,
+        limitPrice,
       },
     );
   }
-
-  const limitPrice = resolveBtc15mEntryLimitPrice({
-    bestAsk,
-    offsetTicks: input.config.entry.entryAskOffsetTicks,
-    tickSize: input.orderbook.tickSize ?? null,
-    askCap: input.config.entry.askCap,
-  });
 
   return {
     decision: 'ELIGIBLE',

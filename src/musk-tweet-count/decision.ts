@@ -16,7 +16,7 @@ export function evaluateMuskTweetStrategy(
   config: MuskTweetEntryConfig,
   nowSec: number = Date.parse(snapshot.capturedAt) / 1_000,
 ): MuskTweetEvaluation {
-  const inputError = validateEvaluationInput(snapshot, nowSec);
+  const inputError = validateEvaluationInput(snapshot, config, nowSec);
   if (inputError) return invalidEvaluation(inputError.code, inputError.message);
   const intents: MuskTweetTradeIntent[] = [];
   const rejected: MuskTweetTradeIntent[] = [];
@@ -44,9 +44,9 @@ export function evaluateMuskTweetNextMarketPreposition(
   config: MuskTweetEntryConfig,
   nowSec: number = Date.parse(current.capturedAt) / 1_000,
 ): MuskTweetEvaluation {
-  const currentInputError = validateEvaluationInput(current, nowSec);
+  const currentInputError = validateEvaluationInput(current, config, nowSec);
   if (currentInputError) return invalidEvaluation(currentInputError.code, currentInputError.message);
-  const nextInputError = validateSnapshotTimes(next);
+  const nextInputError = validateSnapshot(next);
   if (nextInputError) return invalidEvaluation(nextInputError.code, nextInputError.message);
   const intents: MuskTweetTradeIntent[] = [];
   const rejected: MuskTweetTradeIntent[] = [];
@@ -454,15 +454,51 @@ function invalidEvaluation(code: MuskTweetInputErrorCode, message: string): Musk
 
 function validateEvaluationInput(
   snapshot: MuskTweetSnapshot,
+  config: MuskTweetEntryConfig,
   nowSec: number,
 ): { code: MuskTweetInputErrorCode; message: string } | null {
   if (!isValidUnixSeconds(nowSec)) {
     return { code: 'INVALID_NOW_SEC', message: 'nowSec must be a finite Unix timestamp representable by JavaScript Date.' };
   }
-  return validateSnapshotTimes(snapshot);
+  const snapshotError = validateSnapshot(snapshot);
+  if (snapshotError) return snapshotError;
+  const numericConfig = [
+    config.maxNotionalUsd, config.minOrderNotionalUsd, config.minExpectedProfitUsd,
+    config.entryOrderTtlSeconds, config.tailNoAllocationPct, config.lateDirectionalAllocationPct,
+    config.lotteryAllocationPct, config.lotteryMaxSingleTradePct, config.nextMarketPrepositionPct,
+    config.lowTailBoundaryBufferTweets, config.lowTailMinAsk, config.lowTailMaxAsk,
+    config.highTailMinAsk, config.highTailMaxAsk, config.highTailMaxRemainingHours,
+    config.directionalMinRemainingHours, config.directionalMaxRemainingHours,
+    config.lotteryBurstRate30m, config.lotteryBurstRate60m, config.nextMarketPrepositionMaxHours,
+  ];
+  if (numericConfig.some((value) => !Number.isFinite(value))
+    || !(config.maxNotionalUsd > 0)
+    || !(config.minOrderNotionalUsd > 0)
+    || config.minExpectedProfitUsd < 0
+    || !Number.isInteger(config.entryOrderTtlSeconds)
+    || config.entryOrderTtlSeconds <= 0
+    || [config.tailNoAllocationPct, config.lateDirectionalAllocationPct, config.lotteryAllocationPct,
+      config.lotteryMaxSingleTradePct, config.nextMarketPrepositionPct]
+      .some((value) => value < 0 || value > 1)
+    || config.lowTailBoundaryBufferTweets < 0
+    || config.lowTailMinAsk <= 0
+    || config.lowTailMaxAsk >= 1
+    || config.lowTailMinAsk > config.lowTailMaxAsk
+    || config.highTailMinAsk <= 0
+    || config.highTailMaxAsk >= 1
+    || config.highTailMinAsk > config.highTailMaxAsk
+    || config.highTailMaxRemainingHours < 0
+    || config.directionalMinRemainingHours < 0
+    || config.directionalMaxRemainingHours < config.directionalMinRemainingHours
+    || config.lotteryBurstRate30m < 0
+    || config.lotteryBurstRate60m < 0
+    || config.nextMarketPrepositionMaxHours < 0) {
+    return { code: 'INVALID_ENTRY_CONFIG', message: 'Musk entry configuration contains invalid numeric values.' };
+  }
+  return null;
 }
 
-function validateSnapshotTimes(
+function validateSnapshot(
   snapshot: MuskTweetSnapshot,
 ): { code: MuskTweetInputErrorCode; message: string } | null {
   if (!isValidTimestamp(snapshot.capturedAt)) {
@@ -476,6 +512,61 @@ function validateSnapshotTimes(
   }
   if (!isValidTimestamp(snapshot.counter.updatedAt)) {
     return { code: 'INVALID_COUNTER_UPDATED_AT', message: 'snapshot.counter.updatedAt must be a valid timestamp.' };
+  }
+  if (Date.parse(snapshot.market.endAt) <= Date.parse(snapshot.market.startAt)) {
+    return { code: 'INVALID_MARKET_END_AT', message: 'snapshot.market.endAt must be after market.startAt.' };
+  }
+  if (!Number.isInteger(snapshot.counter.count) || snapshot.counter.count < 0) {
+    return { code: 'INVALID_COUNTER_COUNT', message: 'snapshot.counter.count must be a non-negative integer.' };
+  }
+  if (!Number.isFinite(snapshot.remainingHours) || snapshot.remainingHours < 0) {
+    return { code: 'INVALID_REMAINING_HOURS', message: 'snapshot.remainingHours must be finite and non-negative.' };
+  }
+  const rates = snapshot.rates;
+  if (!rates || !['normal', 'cooldown', 'burst', 'special_event'].includes(rates.eventFactor)
+    || [rates.rate30m, rates.rate60m, rates.rate2h, rates.rate6h, rates.rate24h, rates.cooldownHours]
+      .some((value) => !Number.isFinite(value) || value < 0)) {
+    return { code: 'INVALID_RATE_SNAPSHOT', message: 'snapshot.rates must contain finite non-negative values.' };
+  }
+  if (!Array.isArray(snapshot.market.ranges)) {
+    return { code: 'INVALID_MARKET_RANGES', message: 'snapshot.market.ranges must be an array.' };
+  }
+  const orderedRanges = [...snapshot.market.ranges].sort((left, right) => left.minInclusive - right.minInclusive);
+  const rangeTokens = new Set<string>();
+  for (let index = 0; index < orderedRanges.length; index += 1) {
+    const range = orderedRanges[index];
+    const previous = orderedRanges[index - 1];
+    if (!range.label?.trim()
+      || !Number.isInteger(range.minInclusive)
+      || range.minInclusive < 0
+      || (range.maxInclusive != null && (!Number.isInteger(range.maxInclusive) || range.maxInclusive < range.minInclusive))
+      || !range.yesTokenId?.trim()
+      || !range.noTokenId?.trim()
+      || range.yesTokenId === range.noTokenId
+      || rangeTokens.has(range.yesTokenId)
+      || rangeTokens.has(range.noTokenId)
+      || (previous != null && previous.maxInclusive == null)
+      || (previous != null && previous.maxInclusive != null && range.minInclusive <= previous.maxInclusive)) {
+      return { code: 'INVALID_MARKET_RANGES', message: 'snapshot.market.ranges contain invalid, overlapping, or duplicate identities.' };
+    }
+    rangeTokens.add(range.yesTokenId);
+    rangeTokens.add(range.noTokenId);
+  }
+  if (!Array.isArray(snapshot.orderbooks)) {
+    return { code: 'INVALID_ORDERBOOKS', message: 'snapshot.orderbooks must be an array.' };
+  }
+  const quoteTokens = new Set<string>();
+  for (const quote of snapshot.orderbooks) {
+    if (!quote.tokenId?.trim()
+      || quoteTokens.has(quote.tokenId)
+      || (quote.minOrderSize != null && (!Number.isFinite(quote.minOrderSize) || quote.minOrderSize <= 0))
+      || (quote.bestBid != null && (!Number.isFinite(quote.bestBid) || quote.bestBid < 0 || quote.bestBid >= 1))
+      || (quote.bestAsk != null && (!Number.isFinite(quote.bestAsk) || quote.bestAsk <= 0 || quote.bestAsk >= 1))
+      || (quote.spread != null && (!Number.isFinite(quote.spread) || quote.spread < 0))
+      || (quote.topDepthUsd != null && (!Number.isFinite(quote.topDepthUsd) || quote.topDepthUsd < 0))) {
+      return { code: 'INVALID_ORDERBOOKS', message: 'snapshot.orderbooks contain invalid or duplicate quotes.' };
+    }
+    quoteTokens.add(quote.tokenId);
   }
   return null;
 }

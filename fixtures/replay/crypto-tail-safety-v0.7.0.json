@@ -1,0 +1,170 @@
+{
+  "corpusVersion": "crypto-tail-safety-v0.7.0",
+  "manifest": {
+    "modelVersion": "heuristic-v3-twap",
+    "inputSchemaVersion": 2,
+    "executionPolicyVersion": 2
+  },
+  "baseInput": {
+    "nowSec": 1800000880,
+    "round": {
+      "roundKey": "btc-updown-15m-1800000000",
+      "eventSlug": "btc-updown-15m-1800000000",
+      "eventTitle": null,
+      "eventImage": null,
+      "eventIcon": null,
+      "marketId": "market-1",
+      "marketQuestion": null,
+      "marketImage": null,
+      "marketIcon": null,
+      "upTokenId": "up-token",
+      "downTokenId": "down-token",
+      "upOutcomeLabel": "Up",
+      "downOutcomeLabel": "Down",
+      "roundStartSec": 1800000000,
+      "roundEndSec": 1800000900,
+      "priceToBeat": 100000,
+      "priceToBeatSource": "chainlink",
+      "resolutionPriceModel": {
+        "kind": "chainlink-twap",
+        "asset": "BTC",
+        "windowSeconds": 60,
+        "configId": null
+      },
+      "active": true,
+      "closed": false,
+      "acceptingOrders": true,
+      "enableOrderBook": true,
+      "orderMinSize": 5,
+      "liquidityClob": 20000,
+      "settlementSourceOk": true,
+      "metadataFresh": true
+    },
+    "chainlink": {
+      "startPrice": 100000,
+      "currentPrice": 100120,
+      "currentPointTs": 1800000880,
+      "fresh": true,
+      "priceModel": null
+    },
+    "orderbook": {
+      "bestAsk": 0.92,
+      "bestBid": 0.915,
+      "spread": 0.005,
+      "topDepthUsd": 100,
+      "tickSize": 0.01,
+      "fresh": true
+    },
+    "config": {
+      "entry": {
+        "mode": "LIVE",
+        "maxNotionalUsd": 5,
+        "askCap": 0.95,
+        "minEntryAsk": 0.9,
+        "edgeGateEnabled": true,
+        "minEdgeBps": 150,
+        "distanceGateEnabled": false,
+        "minDistancePercent": 0.1,
+        "absoluteDistanceGateEnabled": false,
+        "minAbsoluteDistanceUsd": 30,
+        "directionFlipStopEnabled": false,
+        "distanceCollapseStopEnabled": false,
+        "distanceCollapseStopPercent": 40,
+        "consistencyGateEnabled": false,
+        "consistencyMinContradictionBps": 1.5,
+        "takeProfitEnabled": false,
+        "takeProfitPrice": null,
+        "orderbookStopEnabled": false,
+        "orderbookStopPrice": null,
+        "orderbookStopSlippageBps": 300,
+        "entryWindowStartSeconds": 120,
+        "entryWindowEndSeconds": 4,
+        "entryWindows": [
+          { "secondsToEndMin": 90, "minDistanceBps": 0 },
+          { "secondsToEndMin": 60, "minDistanceBps": 0 },
+          { "secondsToEndMin": 30, "minDistanceBps": 0 },
+          { "secondsToEndMin": 20, "minDistanceBps": 0 },
+          { "secondsToEndMin": 16, "minDistanceBps": 0 },
+          { "secondsToEndMin": 4, "minDistanceBps": 0 }
+        ],
+        "maxSpread": 0.01,
+        "maxSpreadHard": 0.02,
+        "minLiquidityClob": 1000,
+        "depthMultiplier": 3,
+        "entryOrderChaseEnabled": true,
+        "cancelOpenOrdersEnabled": false,
+        "cancelAfterMs": 10000,
+        "maxChaseTicks": 1,
+        "entryAskOffsetTicks": 0,
+        "hedgeEnabled": false,
+        "hedgeMaxPairCost": 0.985
+      },
+      "risk": {
+        "dailyLossStopUsd": 10,
+        "dailyLossStopBehavior": "AUTO_RESUME_NEXT_UTC_DAY",
+        "maxTaskNetLossUsd": null,
+        "maxTaskNetProfitUsd": null,
+        "consecutiveLossStop": 3,
+        "maxTradesPerDay": 20
+      }
+    },
+    "risk": {
+      "dailyLossUsd": 0,
+      "taskNetLossUsd": 0,
+      "consecutiveLosses": 0,
+      "tradesToday": 0,
+      "hasRoundExecution": false
+    },
+    "global": {
+      "enabled": true,
+      "liveTradingEnabled": true,
+      "maxNotionalUsd": null
+    }
+  },
+  "cases": [
+    {
+      "id": "eligible-baseline",
+      "overrides": {},
+      "expected": {
+        "decision": "ELIGIBLE",
+        "reasonCode": "ENTRY_READY",
+        "limitPrice": 0.92
+      }
+    },
+    {
+      "id": "zero-distance-fails-closed",
+      "overrides": {
+        "nowSec": 1800000896,
+        "chainlink": {
+          "currentPrice": 100000,
+          "currentPointTs": 1800000896
+        }
+      },
+      "expected": {
+        "decision": "WAIT",
+        "reasonCode": "SIGNAL_DISTANCE_ZERO",
+        "distanceBps": 0
+      }
+    },
+    {
+      "id": "offset-minimum-shares-fails-closed",
+      "overrides": {
+        "round": { "orderMinSize": 10.1 },
+        "orderbook": { "bestAsk": 0.49, "bestBid": 0.485 },
+        "config": {
+          "entry": {
+            "askCap": 0.6,
+            "minEntryAsk": 0.1,
+            "edgeGateEnabled": false,
+            "entryAskOffsetTicks": 1
+          }
+        }
+      },
+      "expected": {
+        "decision": "SKIP",
+        "reasonCode": "LIMIT_ORDER_SIZE_BELOW_MARKET_MINIMUM",
+        "limitPrice": 0.5
+      }
+    }
+  ]
+}

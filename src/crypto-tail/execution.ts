@@ -55,8 +55,16 @@ export function buildCryptoTailEntryExecutionPlan(params: {
     || !decision.candidateOutcome
     || decision.limitPrice == null
     || decision.notionalUsd == null
-    || !(decision.limitPrice > 0)
+    || !Number.isFinite(decision.limitPrice)
+    || !Number.isFinite(decision.notionalUsd)
+    || !(decision.limitPrice > 0 && decision.limitPrice < 1)
     || !(decision.notionalUsd > 0)
+    || !Number.isFinite(config.entry.cancelAfterMs)
+    || !(config.entry.cancelAfterMs > 0)
+    || !Number.isFinite(config.entry.maxChaseTicks)
+    || config.entry.maxChaseTicks < 0
+    || !Number.isFinite(config.entry.askCap)
+    || !(config.entry.askCap > 0 && config.entry.askCap < 1)
   ) {
     return { ok: false, reasonCode: 'DECISION_PAYLOAD_INCOMPLETE' };
   }
@@ -111,22 +119,43 @@ export type CryptoTailChaseEligibilityInput = {
 
 export type CryptoTailChaseEligibilityResult =
   | { eligible: true; chasePrice: number }
-  | { eligible: false; reason: string };
+  | { eligible: false; reason:
+      | 'ALREADY_CHASED'
+      | 'CHASE_DISABLED'
+      | 'CHASE_INPUT_INVALID'
+      | 'ORIGINAL_PRICE_UNKNOWN'
+      | 'ROUND_END_UNKNOWN'
+      | 'INSUFFICIENT_TIME_REMAINING'
+      | 'CHASE_PRICE_EXCEEDS_ASK_CAP' };
 
 /** Evaluates a single bounded chase without cancelling or submitting any order. */
 export function evaluateCryptoTailChase(
   input: CryptoTailChaseEligibilityInput,
 ): CryptoTailChaseEligibilityResult {
   if (input.alreadyChased) return { eligible: false, reason: 'ALREADY_CHASED' };
-  if (!(input.maxChaseTicks > 0)) return { eligible: false, reason: 'CHASE_DISABLED' };
+  if (!Number.isFinite(input.maxChaseTicks) || input.maxChaseTicks <= 0) return { eligible: false, reason: 'CHASE_DISABLED' };
   if (!Number.isFinite(input.originalPrice)) return { eligible: false, reason: 'ORIGINAL_PRICE_UNKNOWN' };
   if (input.roundEndSec == null) return { eligible: false, reason: 'ROUND_END_UNKNOWN' };
+  if (!Number.isInteger(input.maxChaseTicks)
+    || !Number.isFinite(input.tickSize)
+    || !(input.tickSize > 0 && input.tickSize < 1)
+    || !Number.isFinite(input.askCap)
+    || !(input.askCap > 0 && input.askCap < 1)
+    || !Number.isFinite(input.cancelAfterMs)
+    || !(input.cancelAfterMs > 0)
+    || !Number.isFinite(input.roundEndSec)
+    || !Number.isFinite(input.nowSec)) {
+    return { eligible: false, reason: 'CHASE_INPUT_INVALID' };
+  }
   const secondsRemaining = input.roundEndSec - input.nowSec;
   const minRemainingSeconds = input.cancelAfterMs / 1000;
   if (secondsRemaining < minRemainingSeconds) {
     return { eligible: false, reason: 'INSUFFICIENT_TIME_REMAINING' };
   }
   const chasePrice = Math.round((input.originalPrice + input.maxChaseTicks * input.tickSize) * 1e6) / 1e6;
+  if (!Number.isFinite(chasePrice) || !(chasePrice > 0 && chasePrice < 1)) {
+    return { eligible: false, reason: 'CHASE_INPUT_INVALID' };
+  }
   if (chasePrice > input.askCap) return { eligible: false, reason: 'CHASE_PRICE_EXCEEDS_ASK_CAP' };
   return { eligible: true, chasePrice };
 }
@@ -136,6 +165,9 @@ export function buildCryptoTailChaseOrder(
   plan: CryptoTailEntryExecutionPlan,
   chasePrice: number,
 ): CryptoTailLimitOrderIntent {
+  if (!Number.isFinite(chasePrice) || !(chasePrice > 0 && chasePrice < 1)) {
+    throw new RangeError('Crypto Tail chase price must be finite and between 0 and 1.');
+  }
   return {
     ...plan.order,
     price: chasePrice,

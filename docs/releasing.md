@@ -16,7 +16,7 @@ Published npm versions are immutable. Releases should be reproducible from a rev
    npm pack --dry-run
    ```
 
-5. Inspect the packed file list. It must include built declarations, maps, documentation, examples, license, and changelog; it must not include source tests, credentials, `.env`, or local artifacts.
+5. Inspect the packed file list. It must include built declarations, maps, documentation, examples, versioned replay fixtures, license, and changelog; it must not include source tests, credentials, `.env`, or local artifacts.
 6. Review dependency and token provenance. The package currently has no runtime dependencies.
 
 ## Publish
@@ -34,6 +34,8 @@ git push origin vX.Y.Z
 The tag must match the version in `package.json` exactly (for example, tag `v0.7.0` publishes package version `0.7.0`). The workflow uses the `NPM_TOKEN` secret from the GitHub Environment named `NPM_TOKEN`.
 
 The workflow can also be started manually from **Actions > Publish to npm > Run workflow**. Select the commit or branch to publish and enter its exact `package.json` version in the `version` field. The same validation and publishing steps apply.
+
+When an explicitly authorized local token publish happens before the release tag is pushed, publish from the clean release commit and push the tag immediately afterward. The tag workflow treats an existing version as successful only when npm reports the same `gitHead`; an existing version from any other commit fails closed.
 
 ## Post-publish verification
 

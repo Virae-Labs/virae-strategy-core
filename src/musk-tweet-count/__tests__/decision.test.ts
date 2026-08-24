@@ -242,6 +242,7 @@ test('covers every canonical selector outcome', () => {
 test('treats out-of-window next markets as not applicable and just-started markets as low-tail candidates', () => {
   const current = snapshot();
   const farMarket = market('upcoming', 99 * 3_600);
+  farMarket.endAt = new Date((nowSec + 100 * 3_600) * 1_000).toISOString();
   const far = snapshot({ market: farMarket, orderbooks: [] });
   expect(evaluateMuskTweetNextMarketPreposition(current, far, DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry, nowSec).checks[0].status)
     .toBe('not-applicable');
@@ -291,6 +292,28 @@ test('fails closed with stable reason codes for invalid timestamps', () => {
     expect(evaluateMuskTweetStrategy(input, DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry, nowSec))
       .toMatchObject({ inputErrorCode, intents: [], rejected: [] });
   }
+});
+
+test('fails closed on malformed counter, rate, range, orderbook, and config numbers', () => {
+  const cases = [
+    [snapshot({ counter: { count: -1, source: 'xtracker', fresh: true, updatedAt: nowIso } }), 'INVALID_COUNTER_COUNT'],
+    [snapshot({ remainingHours: Number.NaN }), 'INVALID_REMAINING_HOURS'],
+    [snapshot({ rates: { ...snapshot().rates, rate30m: Number.POSITIVE_INFINITY } }), 'INVALID_RATE_SNAPSHOT'],
+    [snapshot({ market: { ...market('active'), ranges: [
+      { label: 'A', minInclusive: 0, maxInclusive: 50, yesTokenId: 'a-yes', noTokenId: 'a-no' },
+      { label: 'B', minInclusive: 50, maxInclusive: 60, yesTokenId: 'b-yes', noTokenId: 'b-no' },
+    ] } }), 'INVALID_MARKET_RANGES'],
+    [snapshot({ orderbooks: [{ ...snapshot().orderbooks[0], bestAsk: Number.NaN }] }), 'INVALID_ORDERBOOKS'],
+  ] as const;
+  for (const [input, inputErrorCode] of cases) {
+    expect(evaluateMuskTweetStrategy(input, DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry, nowSec))
+      .toMatchObject({ inputErrorCode, intents: [], rejected: [] });
+  }
+  expect(evaluateMuskTweetStrategy(
+    snapshot(),
+    { ...DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry, lotteryBurstRate30m: Number.NaN },
+    nowSec,
+  )).toMatchObject({ inputErrorCode: 'INVALID_ENTRY_CONFIG', intents: [], rejected: [] });
 });
 
 test('does not treat the 115+ lottery range as the 90-114 high-tail range', () => {

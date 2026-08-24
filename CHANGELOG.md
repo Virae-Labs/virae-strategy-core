@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.7.0 - 2026-08-24
+
+- Fail closed on non-finite Crypto Tail market, oracle, risk, configuration, execution-plan, and chase inputs with typed reason codes.
+- Prevent zero-distance Crypto Tail snapshots from inferring an Up signal or receiving the heuristic time confidence boost.
+- Resolve the final tick-aligned entry price before minimum-share, fee, and edge checks; prevent off-grid ask caps from producing off-grid order intents.
+- Enforce the configured Crypto Tail task profit stop and harden lifecycle transitions against invalid, out-of-order, regressing, and overfilled events.
+- Validate Musk tweet-count counters, remaining time, rates, ranges, order books, and entry configuration before evaluating a trade.
+- Generate Crypto Tail hosted profile keys from the manifest registry and publish a versioned Crypto Tail safety replay corpus.
+- Make the npm release workflow idempotent only when an existing registry version records the exact release commit.
+- Bump the Crypto Tail model to `heuristic-v3-twap`, input schema to `2`, and execution policy to `2`.
+
 ## 0.6.0 - 2026-08-18
 
 - Expand the Crypto Tail host catalog and documented profile boundary so SOL, DOGE, XRP, and BNB are supported at 1 hour as well as 15 minutes.
