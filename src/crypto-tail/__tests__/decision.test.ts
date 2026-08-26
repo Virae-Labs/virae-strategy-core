@@ -214,6 +214,57 @@ describe('decideBtc15mTailEntry', () => {
     });
   });
 
+  it('accepts an exact spread tick boundary despite binary floating-point noise', () => {
+    const input = baseInput({
+      orderbook: {
+        ...baseInput().orderbook,
+        bestAsk: 0.95,
+        bestBid: 0.94,
+        spread: 0.95 - 0.94,
+      },
+      config: {
+        ...REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+        entry: {
+          ...REFERENCE_CRYPTO_TAIL_CONFIG_V1.entry,
+          maxSpread: 0.01,
+          maxSpreadHard: 0.02,
+          edgeGateEnabled: false,
+        },
+      },
+    });
+
+    expect(decideBtc15mTailEntry(input)).toMatchObject({
+      decision: 'ELIGIBLE',
+      reasonCode: 'ENTRY_READY',
+    });
+    expect(buildBtc15mGateDiagnostics(input)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'spread_target', status: 'pass' }),
+    ]));
+  });
+
+  it('still rejects a spread that is materially above the configured target', () => {
+    const input = baseInput({
+      orderbook: {
+        ...baseInput().orderbook,
+        spread: 0.010001,
+      },
+      config: {
+        ...REFERENCE_CRYPTO_TAIL_CONFIG_V1,
+        entry: {
+          ...REFERENCE_CRYPTO_TAIL_CONFIG_V1.entry,
+          maxSpread: 0.01,
+          maxSpreadHard: 0.02,
+          edgeGateEnabled: false,
+        },
+      },
+    });
+
+    expect(decideBtc15mTailEntry(input)).toMatchObject({
+      decision: 'SKIP',
+      reasonCode: 'SPREAD_ABOVE_TARGET',
+    });
+  });
+
   it('waits when the optional open-price distance gate is enabled and too low', () => {
     const input = baseInput({
       config: {

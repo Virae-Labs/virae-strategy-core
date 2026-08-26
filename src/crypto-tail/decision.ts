@@ -64,6 +64,17 @@ function finiteOptional(value: unknown): boolean {
   return value == null || finite(value);
 }
 
+// Orderbook spreads are derived from decimal prices represented as binary
+// floating-point values (for example, 0.99 - 0.98 becomes
+// 0.010000000000000009). Keep an epsilon far below any supported venue tick so
+// an exact tick-boundary spread is not rejected while genuinely wider spreads
+// still fail closed.
+const SPREAD_COMPARISON_EPSILON = 1e-9;
+
+function spreadExceedsLimit(spread: number, limit: number): boolean {
+  return spread - limit > SPREAD_COMPARISON_EPSILON;
+}
+
 function validateCryptoTailInput(input: Btc15mDecisionInput): string | null {
   if (!input || typeof input !== 'object') return 'Input must be an object.';
   if (!finite(input.nowSec)) return 'nowSec must be finite.';
@@ -420,8 +431,8 @@ export function buildBtc15mGateDiagnostics(input: Btc15mDecisionInput): Btc15mGa
     gate('entry_price_floor', 'Entry price floor', bestAsk != null && bestAsk > input.config.entry.minEntryAsk ? 'pass' : 'fail', `> ${fmt(input.config.entry.minEntryAsk)}`, fmt(bestAsk)),
     gate('entry_price_cap', 'Entry price cap', bestAsk != null && bestAsk <= input.config.entry.askCap ? 'pass' : 'fail', `<= ${fmt(input.config.entry.askCap)}`, fmt(bestAsk)),
     gate('spread_available', 'Spread available', input.orderbook.spread != null ? 'pass' : 'fail', 'spread present', fmt(input.orderbook.spread)),
-    gate('spread_hard_cap', 'Spread hard cap', input.orderbook.spread != null && input.orderbook.spread <= input.config.entry.maxSpreadHard ? 'pass' : 'fail', `<= ${fmt(input.config.entry.maxSpreadHard)}`, fmt(input.orderbook.spread)),
-    gate('spread_target', 'Spread target', input.orderbook.spread != null && input.orderbook.spread <= input.config.entry.maxSpread ? 'pass' : 'fail', `<= ${fmt(input.config.entry.maxSpread)}`, fmt(input.orderbook.spread)),
+    gate('spread_hard_cap', 'Spread hard cap', input.orderbook.spread != null && !spreadExceedsLimit(input.orderbook.spread, input.config.entry.maxSpreadHard) ? 'pass' : 'fail', `<= ${fmt(input.config.entry.maxSpreadHard)}`, fmt(input.orderbook.spread)),
+    gate('spread_target', 'Spread target', input.orderbook.spread != null && !spreadExceedsLimit(input.orderbook.spread, input.config.entry.maxSpread) ? 'pass' : 'fail', `<= ${fmt(input.config.entry.maxSpread)}`, fmt(input.orderbook.spread)),
     gate('round_duplicate', 'No round duplicate', !input.risk.hasRoundExecution ? 'pass' : 'fail', 'no existing live order this round', input.risk.hasRoundExecution ? 'already executed' : 'clear'),
     gate('daily_loss_stop', 'Strategy daily loss stop clear', input.risk.dailyLossUsd < input.config.risk.dailyLossStopUsd ? 'pass' : 'fail', `< $${fmt(input.config.risk.dailyLossStopUsd, 2)}`, `$${fmt(input.risk.dailyLossUsd, 2)}`),
     gate(
@@ -609,10 +620,10 @@ export function decideBtc15mTailEntry(input: Btc15mDecisionInput): Btc15mDecisio
   if (input.orderbook.spread == null) {
     return skip('SPREAD_UNAVAILABLE', 'Orderbook spread is unavailable.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
   }
-  if (input.orderbook.spread > input.config.entry.maxSpreadHard) {
+  if (spreadExceedsLimit(input.orderbook.spread, input.config.entry.maxSpreadHard)) {
     return skip('SPREAD_TOO_WIDE', 'Spread is above the hard cap.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
   }
-  if (input.orderbook.spread > input.config.entry.maxSpread) {
+  if (spreadExceedsLimit(input.orderbook.spread, input.config.entry.maxSpread)) {
     return skip('SPREAD_ABOVE_TARGET', 'Spread is above the strategy target.', { secondsToEnd, distanceBps, candidateOutcome, selectedTokenId });
   }
 

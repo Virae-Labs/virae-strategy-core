@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.8.1 - 2026-08-26
+
+- Treat decimal spread values within a sub-tick floating-point epsilon as equal to Crypto Tail spread limits, keeping decision results and gate diagnostics consistent at exact price-tick boundaries.
+
 ## 0.8.0 - 2026-08-26
 
 - **Breaking:** replace the public `ev-snipe` package subpath, symbols, Skill operations, and catalog key with the canonical `hit-price-snipe` contract. No compatibility export is retained.
