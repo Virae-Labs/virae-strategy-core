@@ -65,10 +65,12 @@ jobs:
         run: |
           package_name="$(node -p "require('./package.json').name")"
           package_version="$(node -p "require('./package.json').version")"
-          published_git_head="$(npm view "$package_name@$package_version" gitHead --json 2>/dev/null | tr -d '"' || true)"
-          if [[ -z "$published_git_head" ]]; then
+          if ! npm view "$package_name@$package_version" version --json >/dev/null 2>&1; then
             echo "already_published=false" >> "$GITHUB_OUTPUT"
-          elif [[ "$published_git_head" == "$GITHUB_SHA" ]]; then
+            exit 0
+          fi
+          published_git_head="$(npm view "$package_name@$package_version" gitHead --json | tr -d '"')"
+          if [[ "$published_git_head" == "$GITHUB_SHA" ]]; then
             echo "Version already exists from this exact commit; treating the publish as idempotent."
             echo "already_published=true" >> "$GITHUB_OUTPUT"
           else
