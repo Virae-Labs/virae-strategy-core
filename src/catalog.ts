@@ -2,12 +2,21 @@ import { CRYPTO_TAIL_PROFILE_KEYS, CRYPTO_TAIL_STRATEGY_MANIFEST } from './crypt
 import { PRE_MARKET_STRATEGY_MANIFEST } from './pre-market';
 import { MUSK_TWEET_COUNT_STRATEGY_MANIFEST } from './musk-tweet-count';
 import { WEATHER_TEMPERATURE_STRATEGY_MANIFEST } from './weather-temperature';
-import { EV_SNIPE_STRATEGY_MANIFEST } from './ev-snipe';
+import { HIT_PRICE_SNIPE_STRATEGY_MANIFEST } from './hit-price-snipe';
+import { BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST } from './btc15m-value-snipe';
+
+export type ViraeStrategyCoreKey =
+  | 'crypto-tail'
+  | 'pre-market'
+  | 'musk-tweet-count'
+  | 'weather-temperature'
+  | 'hit-price-snipe'
+  | 'btc15m-value-snipe';
 
 export type ViraeStrategyCoreCatalogEntry = {
-  key: 'crypto-tail' | 'pre-market' | 'musk-tweet-count' | 'weather-temperature' | 'ev-snipe';
+  key: ViraeStrategyCoreKey;
   packageName: '@viraeai/virae-strategy-core';
-  module: 'crypto-tail' | 'pre-market' | 'musk-tweet-count' | 'weather-temperature' | 'ev-snipe';
+  module: ViraeStrategyCoreKey;
   autoTradeStrategyKeys: readonly string[];
   capabilities: {
     decision: boolean;
@@ -16,7 +25,13 @@ export type ViraeStrategyCoreCatalogEntry = {
     networkAccess: false;
     orderSubmission: false;
   };
-  manifest: typeof CRYPTO_TAIL_STRATEGY_MANIFEST | typeof PRE_MARKET_STRATEGY_MANIFEST | typeof MUSK_TWEET_COUNT_STRATEGY_MANIFEST | typeof WEATHER_TEMPERATURE_STRATEGY_MANIFEST | typeof EV_SNIPE_STRATEGY_MANIFEST;
+  manifest:
+    | typeof CRYPTO_TAIL_STRATEGY_MANIFEST
+    | typeof PRE_MARKET_STRATEGY_MANIFEST
+    | typeof MUSK_TWEET_COUNT_STRATEGY_MANIFEST
+    | typeof WEATHER_TEMPERATURE_STRATEGY_MANIFEST
+    | typeof HIT_PRICE_SNIPE_STRATEGY_MANIFEST
+    | typeof BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST;
 };
 
 /**
@@ -82,10 +97,10 @@ export const VIRAE_STRATEGY_CORE_CATALOG = [
     manifest: WEATHER_TEMPERATURE_STRATEGY_MANIFEST,
   },
   {
-    key: 'ev-snipe',
+    key: 'hit-price-snipe',
     packageName: '@viraeai/virae-strategy-core',
-    module: 'ev-snipe',
-    autoTradeStrategyKeys: [],
+    module: 'hit-price-snipe',
+    autoTradeStrategyKeys: ['hit-price-snipe'],
     capabilities: {
       decision: true,
       orderIntents: true,
@@ -93,6 +108,20 @@ export const VIRAE_STRATEGY_CORE_CATALOG = [
       networkAccess: false,
       orderSubmission: false,
     },
-    manifest: EV_SNIPE_STRATEGY_MANIFEST,
+    manifest: HIT_PRICE_SNIPE_STRATEGY_MANIFEST,
+  },
+  {
+    key: 'btc15m-value-snipe',
+    packageName: '@viraeai/virae-strategy-core',
+    module: 'btc15m-value-snipe',
+    autoTradeStrategyKeys: ['btc15m-value-snipe'],
+    capabilities: {
+      decision: true,
+      orderIntents: false,
+      replay: true,
+      networkAccess: false,
+      orderSubmission: false,
+    },
+    manifest: BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST,
   },
 ] as const satisfies readonly ViraeStrategyCoreCatalogEntry[];

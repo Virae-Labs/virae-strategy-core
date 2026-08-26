@@ -1,8 +1,8 @@
-# EV Snipe simulation contract
+# Hit Price Snipe contract
 
 ## Status
 
-EV Snipe is **simulation only**. The package exports a deterministic policy and system-level matrix; it does not indicate that Virae Agents currently supports live EV Snipe execution.
+Hit Price Snipe exports a deterministic policy and system-level matrix. Strategy Core does not submit live orders; a host may separately support paper or live execution after applying its own safety boundary.
 
 The initial contract intentionally separates:
 
@@ -11,7 +11,7 @@ The initial contract intentionally separates:
 
 ## Normalized input
 
-`decideEvSnipeEntry` receives one coherent snapshot containing:
+`decideHitPriceSnipeEntry` receives one coherent snapshot containing:
 
 - an already parsed hit-price market specification;
 - consecutive source trade prices and exchange/receive timestamps, including bounded source transport latency;
@@ -47,11 +47,11 @@ win probability
 
 The formula is an explicit simulation model. A production host must load the actual per-market fee schedule and any platform fee before evaluation. It must not assume that a configured maximum buy price is the actual fill price.
 
-`simulateEvSnipeFill` models FAK no-fill, partial-fill, and full-fill outcomes, protocol/builder fees, binary payout, and PnL. Protocol fees are rounded to the venue's documented five-decimal precision. Invalid fee models throw instead of returning misleading economics. The simulator deliberately exposes the strategy's small-win/large-loss asymmetry.
+`simulateHitPriceSnipeFill` models FAK no-fill, partial-fill, and full-fill outcomes, protocol/builder fees, binary payout, and PnL. Protocol fees are rounded to the venue's documented five-decimal precision. Invalid fee models throw instead of returning misleading economics. The simulator deliberately exposes the strategy's small-win/large-loss asymmetry.
 
 ## System simulation matrix
 
-`buildEvSnipeSystemSimulationMatrix()` returns version-controlled scenarios across five categories:
+`buildHitPriceSnipeSystemSimulationMatrix()` returns version-controlled scenarios across five categories:
 
 | Category | Covered behavior |
 | --- | --- |
@@ -61,10 +61,10 @@ The formula is an explicit simulation model. A production host must load the act
 | Economics | Maximum price, net edge after fees, winning and losing resolution |
 | Pre-hit | Band entry, required probability, and cutoff disablement |
 
-`runEvSnipeSystemSimulationMatrix()` evaluates decisions and optional fills, then reports per-row mismatches. The same serialized scenarios should be replayed by a host adapter before any shadow or live rollout.
+`runHitPriceSnipeSystemSimulationMatrix()` evaluates decisions and optional fills, then reports per-row mismatches. The same serialized scenarios should be replayed by a host adapter before any shadow or live rollout.
 
 ## Host boundary
 
 The host must provide market discovery and exact rules parsing, a gap-aware trade stream, quote acquisition, clock synchronization, durable condition/leg claims, wallet and risk controls, FAK submission, unknown-outcome reconciliation, settlement, and audit persistence.
 
-The core intentionally contains no EVPLUS/EVPOLY source code, network endpoints, credentials, or live execution integration.
+The core intentionally contains no venue source code, network endpoints, credentials, or live execution integration.

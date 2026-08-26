@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { CRYPTO_TAIL_STRATEGY_MANIFEST, decideCryptoTailEntry } from '../../src/crypto-tail';
 import type { CryptoTailDecisionInput, CryptoTailDecisionResult } from '../../src/crypto-tail';
+import { runHitPriceSnipeSystemSimulationMatrix } from '../../src/hit-price-snipe';
+import { runBtc15mValueSnipeSystemSimulationMatrix } from '../../src/btc15m-value-snipe';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -38,5 +40,26 @@ describe('versioned replay corpus', () => {
       const input = merge(corpus.baseInput, fixture.overrides) as CryptoTailDecisionInput;
       expect(decideCryptoTailEntry(input)).toMatchObject(fixture.expected);
     }
+  });
+
+  it('keeps the canonical Snipe 0.8.0 matrix decisions stable', () => {
+    const corpus = JSON.parse(readFileSync(
+      resolve(__dirname, '../../fixtures/replay/snipe-system-v0.8.0.json'),
+      'utf8',
+    )) as {
+      packageVersion: string;
+      matrices: Record<string, Array<[string, string, string]>>;
+    };
+    expect(corpus.packageVersion).toBe('0.8.0');
+    const compact = (rows: ReturnType<typeof runHitPriceSnipeSystemSimulationMatrix>
+      | ReturnType<typeof runBtc15mValueSnipeSystemSimulationMatrix>) => rows.map((row) => [
+      row.scenarioId,
+      row.decision.decision,
+      row.decision.reasonCode,
+    ]);
+    expect(compact(runHitPriceSnipeSystemSimulationMatrix()))
+      .toEqual(corpus.matrices['hit-price-snipe']);
+    expect(compact(runBtc15mValueSnipeSystemSimulationMatrix()))
+      .toEqual(corpus.matrices['btc15m-value-snipe']);
   });
 });

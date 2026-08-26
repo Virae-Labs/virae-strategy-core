@@ -8,7 +8,8 @@ Treat `VIRAE_STRATEGY_CORE_CATALOG` as the machine-readable source of truth. Run
 | `pre-market` | `@viraeai/virae-strategy-core/pre-market` | `btc-15m-premarket` | Entry ladder intents, take-profit intents, replay |
 | `musk-tweet-count` | `@viraeai/virae-strategy-core/musk-tweet-count` | `musk-tweet-count` | Current/next decision, selected intent, risk-stop policy, replay |
 | `weather-temperature` | `@viraeai/virae-strategy-core/weather-temperature` | `weather-temperature` | Per-bucket evaluation, TOP1/adjacent TOP2 intents, replay |
-| `ev-snipe` | `@viraeai/virae-strategy-core/ev-snipe` | none (simulation only) | Confirm-hit/Pre-hit decision, FAK fill/PnL simulation, system matrix replay |
+| `hit-price-snipe` | `@viraeai/virae-strategy-core/hit-price-snipe` | `hit-price-snipe` | Confirm-hit/Pre-hit decision, FAK fill/PnL simulation, system matrix replay |
+| `btc15m-value-snipe` | `@viraeai/virae-strategy-core/btc15m-value-snipe` | `btc15m-value-snipe` | Venue-aware recurring BTC 15m decision and Polymarket/Predict.fun matrix replay |
 
 The catalog intentionally omits its own package version. Read `package.json` from the installed artifact so the reported package version cannot drift from the code being executed. Strategy manifests carry model, input-schema, and execution-policy versions.
 

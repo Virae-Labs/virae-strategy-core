@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.8.0 - 2026-08-26
+
+- **Breaking:** replace the public `ev-snipe` package subpath, symbols, Skill operations, and catalog key with the canonical `hit-price-snipe` contract. No compatibility export is retained.
+- Add a venue-aware BTC 15m Value Snipe decision contract, deterministic Polymarket and Predict.fun system simulation matrices, and an explicit host-execution-supported manifest boundary.
+- Require hosts to supply explicit executable all-in cost so venue fees and slippage are never silently shared or guessed across platforms.
+- Add focused strategy documentation, API/integration/testing guidance, consumer packaging coverage, and bundled Skill operations for both canonical Snipe families.
+
 ## 0.7.0 - 2026-08-24
 
 - Fail closed on non-finite Crypto Tail market, oracle, risk, configuration, execution-plan, and chase inputs with typed reason codes.

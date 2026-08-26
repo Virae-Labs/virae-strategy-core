@@ -1,10 +1,10 @@
-export type EvSnipeRule = 'HIT_UP_GTE' | 'HIT_DOWN_LTE';
-export type EvSnipeTriggerMode = 'CONFIRM_HIT' | 'PRE_HIT';
+export type HitPriceSnipeRule = 'HIT_UP_GTE' | 'HIT_DOWN_LTE';
+export type HitPriceSnipeTriggerMode = 'CONFIRM_HIT' | 'PRE_HIT';
 
-export type EvSnipeMarketSpec = {
+export type HitPriceSnipeMarketSpec = {
   conditionId: string;
   symbol: string;
-  rule: EvSnipeRule;
+  rule: HitPriceSnipeRule;
   strikePrice: number;
   yesTokenId: string;
   priceSource: string;
@@ -12,7 +12,7 @@ export type EvSnipeMarketSpec = {
   endTimeMs: number;
 };
 
-export type EvSnipeTradeTick = {
+export type HitPriceSnipeTradeTick = {
   symbol: string;
   priceSource: string;
   previousPrice: number;
@@ -21,7 +21,7 @@ export type EvSnipeTradeTick = {
   receivedTimeMs: number;
 };
 
-export type EvSnipeQuote = {
+export type HitPriceSnipeQuote = {
   tokenId: string;
   bestAsk: number | null;
   availableAskNotionalUsd: number;
@@ -29,8 +29,8 @@ export type EvSnipeQuote = {
   acceptingOrders: boolean;
 };
 
-export type EvSnipeStrategyConfig = {
-  triggerMode: EvSnipeTriggerMode;
+export type HitPriceSnipeStrategyConfig = {
+  triggerMode: HitPriceSnipeTriggerMode;
   sizeUsd: number;
   preHitBps: number;
   preHitDisableBeforeEndMs: number;
@@ -43,16 +43,16 @@ export type EvSnipeStrategyConfig = {
   builderFeeRate: number;
 };
 
-export type EvSnipeDecisionInput = {
-  market: EvSnipeMarketSpec;
-  tick: EvSnipeTradeTick;
-  quote: EvSnipeQuote;
+export type HitPriceSnipeDecisionInput = {
+  market: HitPriceSnipeMarketSpec;
+  tick: HitPriceSnipeTradeTick;
+  quote: HitPriceSnipeQuote;
   evaluatedAtMs: number;
   estimatedWinProbability?: number | null;
-  config?: Partial<EvSnipeStrategyConfig>;
+  config?: Partial<HitPriceSnipeStrategyConfig>;
 };
 
-export type EvSnipeReasonCode =
+export type HitPriceSnipeReasonCode =
   | 'TRIGGER_CONFIRMED'
   | 'PRE_HIT_ENTERED'
   | 'INVALID_INPUT'
@@ -72,15 +72,15 @@ export type EvSnipeReasonCode =
   | 'PRICE_ABOVE_LIMIT'
   | 'INSUFFICIENT_EDGE';
 
-export type EvSnipeOrderIntent = {
+export type HitPriceSnipeOrderIntent = {
   intentKey: string;
-  triggerMode: EvSnipeTriggerMode;
+  triggerMode: HitPriceSnipeTriggerMode;
   side: 'BUY';
   orderType: 'FAK';
   conditionId: string;
   tokenId: string;
   symbol: string;
-  rule: EvSnipeRule;
+  rule: HitPriceSnipeRule;
   strikePrice: number;
   triggerPrice: number;
   triggerExchangeTimeMs: number;
@@ -92,18 +92,18 @@ export type EvSnipeOrderIntent = {
   estimatedNetEdgeBps: number;
 };
 
-export type EvSnipeDecisionResult = {
+export type HitPriceSnipeDecisionResult = {
   decision: 'WAIT' | 'SKIP' | 'ELIGIBLE';
-  reasonCode: EvSnipeReasonCode;
+  reasonCode: HitPriceSnipeReasonCode;
   triggerAgeMs: number | null;
   sourceLatencyMs: number | null;
   quoteAgeMs: number | null;
   estimatedNetEdgeBps: number | null;
-  intent: EvSnipeOrderIntent | null;
+  intent: HitPriceSnipeOrderIntent | null;
 };
 
-export type EvSnipeFillSimulationInput = {
-  intent: EvSnipeOrderIntent;
+export type HitPriceSnipeFillSimulationInput = {
+  intent: HitPriceSnipeOrderIntent;
   executionPrice: number | null;
   availableAskNotionalUsd: number;
   resolvedWinning: boolean | null;
@@ -111,7 +111,7 @@ export type EvSnipeFillSimulationInput = {
   builderFeeRate?: number;
 };
 
-export type EvSnipeFillSimulationResult = {
+export type HitPriceSnipeFillSimulationResult = {
   status: 'NO_FILL' | 'PARTIAL' | 'FILLED';
   filledNotionalUsd: number;
   filledShares: number;
@@ -122,25 +122,25 @@ export type EvSnipeFillSimulationResult = {
   pnlUsd: number | null;
 };
 
-export type EvSnipeSimulationScenario = {
+export type HitPriceSnipeSimulationScenario = {
   id: string;
   category: 'TRIGGER' | 'DATA_QUALITY' | 'EXECUTION' | 'ECONOMICS' | 'PRE_HIT';
   description: string;
-  input: EvSnipeDecisionInput;
-  fill?: Omit<EvSnipeFillSimulationInput, 'intent'>;
+  input: HitPriceSnipeDecisionInput;
+  fill?: Omit<HitPriceSnipeFillSimulationInput, 'intent'>;
   expected: {
-    decision: EvSnipeDecisionResult['decision'];
-    reasonCode: EvSnipeReasonCode;
-    fillStatus?: EvSnipeFillSimulationResult['status'];
+    decision: HitPriceSnipeDecisionResult['decision'];
+    reasonCode: HitPriceSnipeReasonCode;
+    fillStatus?: HitPriceSnipeFillSimulationResult['status'];
     pnlSign?: 'POSITIVE' | 'NEGATIVE' | 'ZERO' | 'PENDING';
   };
 };
 
-export type EvSnipeSimulationRowResult = {
+export type HitPriceSnipeSimulationRowResult = {
   scenarioId: string;
-  category: EvSnipeSimulationScenario['category'];
-  decision: EvSnipeDecisionResult;
-  fill: EvSnipeFillSimulationResult | null;
+  category: HitPriceSnipeSimulationScenario['category'];
+  decision: HitPriceSnipeDecisionResult;
+  fill: HitPriceSnipeFillSimulationResult | null;
   passed: boolean;
   mismatches: string[];
 };

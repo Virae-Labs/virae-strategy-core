@@ -1,21 +1,21 @@
-import { normalizeEvSnipeStrategyConfig } from './config';
+import { normalizeHitPriceSnipeStrategyConfig } from './config';
 import type {
-  EvSnipeDecisionInput,
-  EvSnipeDecisionResult,
-  EvSnipeMarketSpec,
-  EvSnipeReasonCode,
-  EvSnipeStrategyConfig,
-  EvSnipeTradeTick,
+  HitPriceSnipeDecisionInput,
+  HitPriceSnipeDecisionResult,
+  HitPriceSnipeMarketSpec,
+  HitPriceSnipeReasonCode,
+  HitPriceSnipeStrategyConfig,
+  HitPriceSnipeTradeTick,
 } from './types';
 
 function result(
-  decision: EvSnipeDecisionResult['decision'],
-  reasonCode: EvSnipeReasonCode,
+  decision: HitPriceSnipeDecisionResult['decision'],
+  reasonCode: HitPriceSnipeReasonCode,
   triggerAgeMs: number | null,
   quoteAgeMs: number | null,
   estimatedNetEdgeBps: number | null = null,
   sourceLatencyMs: number | null = null,
-): EvSnipeDecisionResult {
+): HitPriceSnipeDecisionResult {
   return { decision, reasonCode, triggerAgeMs, sourceLatencyMs, quoteAgeMs, estimatedNetEdgeBps, intent: null };
 }
 
@@ -23,7 +23,7 @@ function validText(value: string): boolean {
   return Boolean(value?.trim()) && value === value.trim();
 }
 
-function validMarket(market: EvSnipeMarketSpec): boolean {
+function validMarket(market: HitPriceSnipeMarketSpec): boolean {
   return validText(market.conditionId)
     && validText(market.symbol)
     && validText(market.yesTokenId)
@@ -36,7 +36,7 @@ function validMarket(market: EvSnipeMarketSpec): boolean {
     && market.endTimeMs > market.startTimeMs;
 }
 
-function validTick(tick: EvSnipeTradeTick): boolean {
+function validTick(tick: HitPriceSnipeTradeTick): boolean {
   return validText(tick.symbol)
     && validText(tick.priceSource)
     && Number.isFinite(tick.previousPrice)
@@ -48,16 +48,16 @@ function validTick(tick: EvSnipeTradeTick): boolean {
     && tick.receivedTimeMs >= tick.exchangeTimeMs;
 }
 
-function crossed(market: EvSnipeMarketSpec, tick: EvSnipeTradeTick): boolean {
+function crossed(market: HitPriceSnipeMarketSpec, tick: HitPriceSnipeTradeTick): boolean {
   return market.rule === 'HIT_UP_GTE'
     ? tick.previousPrice < market.strikePrice && tick.price >= market.strikePrice
     : tick.previousPrice > market.strikePrice && tick.price <= market.strikePrice;
 }
 
 function enteredPreHitBand(
-  market: EvSnipeMarketSpec,
-  tick: EvSnipeTradeTick,
-  config: EvSnipeStrategyConfig,
+  market: HitPriceSnipeMarketSpec,
+  tick: HitPriceSnipeTradeTick,
+  config: HitPriceSnipeStrategyConfig,
 ): boolean {
   const band = config.preHitBps / 10_000;
   if (market.rule === 'HIT_UP_GTE') {
@@ -68,7 +68,7 @@ function enteredPreHitBand(
   return tick.previousPrice > upper && tick.price <= upper && tick.price > market.strikePrice;
 }
 
-export function estimateEvSnipeNetEdgeBps(params: {
+export function estimateHitPriceSnipeNetEdgeBps(params: {
   winProbability: number;
   price: number;
   takerFeeRate: number;
@@ -79,10 +79,10 @@ export function estimateEvSnipeNetEdgeBps(params: {
   return Math.round((params.winProbability - params.price - protocolFeePerShare - builderFeePerShare) * 10_000 * 1e6) / 1e6;
 }
 
-export function decideEvSnipeEntry(input: EvSnipeDecisionInput): EvSnipeDecisionResult {
-  let config: EvSnipeStrategyConfig;
+export function decideHitPriceSnipeEntry(input: HitPriceSnipeDecisionInput): HitPriceSnipeDecisionResult {
+  let config: HitPriceSnipeStrategyConfig;
   try {
-    config = normalizeEvSnipeStrategyConfig(input.config);
+    config = normalizeHitPriceSnipeStrategyConfig(input.config);
   } catch {
     return result('SKIP', 'INVALID_INPUT', null, null);
   }
@@ -99,7 +99,7 @@ export function decideEvSnipeEntry(input: EvSnipeDecisionInput): EvSnipeDecision
   const triggerAgeMs = input.evaluatedAtMs - tick.receivedTimeMs;
   const sourceLatencyMs = tick.receivedTimeMs - tick.exchangeTimeMs;
   const quoteAgeMs = input.evaluatedAtMs - quote.receivedTimeMs;
-  const rejected = (decision: 'WAIT' | 'SKIP', reasonCode: EvSnipeReasonCode, edge: number | null = null) =>
+  const rejected = (decision: 'WAIT' | 'SKIP', reasonCode: HitPriceSnipeReasonCode, edge: number | null = null) =>
     result(decision, reasonCode, triggerAgeMs, quoteAgeMs, edge, sourceLatencyMs);
   if (triggerAgeMs < 0 || quoteAgeMs < 0) return rejected('SKIP', 'INVALID_INPUT');
   if (market.priceSource !== tick.priceSource) return rejected('SKIP', 'SOURCE_MISMATCH');
@@ -132,7 +132,7 @@ export function decideEvSnipeEntry(input: EvSnipeDecisionInput): EvSnipeDecision
 
   if (quote.bestAsk > config.maxBuyPrice) return rejected('SKIP', 'PRICE_ABOVE_LIMIT');
   const winProbability = config.triggerMode === 'CONFIRM_HIT' ? 1 : input.estimatedWinProbability as number;
-  const estimatedNetEdgeBps = estimateEvSnipeNetEdgeBps({
+  const estimatedNetEdgeBps = estimateHitPriceSnipeNetEdgeBps({
     winProbability,
     price: quote.bestAsk,
     takerFeeRate: config.takerFeeRate,

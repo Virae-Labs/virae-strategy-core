@@ -72,20 +72,41 @@ export function evaluate(operation, input) {
       result: core.decideWeatherTemperatureEntry(input),
     };
   }
-  if (operation === 'ev-snipe-entry') {
+  if (operation === 'hit-price-snipe-entry') {
     return {
       operation,
-      manifest: core.EV_SNIPE_STRATEGY_MANIFEST,
-      result: core.decideEvSnipeEntry(input),
+      manifest: core.HIT_PRICE_SNIPE_STRATEGY_MANIFEST,
+      result: core.decideHitPriceSnipeEntry(input),
     };
   }
-  if (operation === 'ev-snipe-system-matrix') {
-    const matrix = Array.isArray(input?.matrix) ? input.matrix : core.buildEvSnipeSystemSimulationMatrix();
+  if (operation === 'hit-price-snipe-system-matrix') {
+    const matrix = Array.isArray(input?.matrix) ? input.matrix : core.buildHitPriceSnipeSystemSimulationMatrix();
     return {
       operation,
-      manifest: core.EV_SNIPE_STRATEGY_MANIFEST,
+      manifest: core.HIT_PRICE_SNIPE_STRATEGY_MANIFEST,
       count: matrix.length,
-      results: core.runEvSnipeSystemSimulationMatrix(matrix),
+      results: core.runHitPriceSnipeSystemSimulationMatrix(matrix),
+    };
+  }
+  if (operation === 'btc15m-value-snipe-entry') {
+    return {
+      operation,
+      manifest: core.BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST,
+      result: core.decideBtc15mValueSnipeEntry(input),
+    };
+  }
+  if (operation === 'btc15m-value-snipe-system-matrix') {
+    const matrix = Array.isArray(input?.matrix)
+      ? input.matrix
+      : input?.venue
+        ? core.buildBtc15mValueSnipeSystemSimulationMatrix(input.venue)
+        : undefined;
+    const results = core.runBtc15mValueSnipeSystemSimulationMatrix(matrix);
+    return {
+      operation,
+      manifest: core.BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST,
+      count: results.length,
+      results,
     };
   }
   throw new Error(`Unsupported operation: ${operation ?? '(missing)'}`);

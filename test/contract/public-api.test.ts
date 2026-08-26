@@ -3,7 +3,8 @@ import * as subpath from '../../src/crypto-tail';
 import * as preMarket from '../../src/pre-market';
 import * as muskTweetCount from '../../src/musk-tweet-count';
 import * as weatherTemperature from '../../src/weather-temperature';
-import * as evSnipe from '../../src/ev-snipe';
+import * as hitPriceSnipe from '../../src/hit-price-snipe';
+import * as btc15mValueSnipe from '../../src/btc15m-value-snipe';
 
 describe('public API contract', () => {
   it('exports the generic strategy surface from root and subpath entry points', () => {
@@ -110,25 +111,45 @@ describe('public API contract', () => {
     expect(root.WEATHER_TEMPERATURE_SIGNAL_PROFILES).toHaveLength(3);
   });
 
-  it('exports the simulation-only EV Snipe surface from root and its focused subpath', () => {
+  it('exports the Hit Price Snipe surface from root and its focused subpath', () => {
     const names = [
-      'decideEvSnipeEntry',
-      'estimateEvSnipeNetEdgeBps',
-      'buildEvSnipeSystemSimulationMatrix',
-      'runEvSnipeSystemSimulationMatrix',
-      'simulateEvSnipeFill',
-      'normalizeEvSnipeStrategyConfig',
-      'EV_SNIPE_STRATEGY_MANIFEST',
-      'DEFAULT_EV_SNIPE_STRATEGY_CONFIG',
+      'decideHitPriceSnipeEntry',
+      'estimateHitPriceSnipeNetEdgeBps',
+      'buildHitPriceSnipeSystemSimulationMatrix',
+      'runHitPriceSnipeSystemSimulationMatrix',
+      'simulateHitPriceSnipeFill',
+      'normalizeHitPriceSnipeStrategyConfig',
+      'HIT_PRICE_SNIPE_STRATEGY_MANIFEST',
+      'DEFAULT_HIT_PRICE_SNIPE_STRATEGY_CONFIG',
     ] as const;
     for (const name of names) {
       expect(root[name]).toBeDefined();
-      expect(root[name]).toBe(evSnipe[name]);
+      expect(root[name]).toBe(hitPriceSnipe[name]);
     }
-    expect(root.EV_SNIPE_STRATEGY_MANIFEST).toMatchObject({
-      modelVersion: 'ev-snipe-simulation-v1',
-      executionPhase: 'SIMULATION_ONLY',
+    expect(root.HIT_PRICE_SNIPE_STRATEGY_MANIFEST).toMatchObject({
+      modelVersion: 'hit-price-snipe-simulation-v1',
+      executionPhase: 'HOST_EXECUTION_SUPPORTED',
     });
+  });
+
+  it('exports the venue-aware BTC 15m Value Snipe surface', () => {
+    const names = [
+      'decideBtc15mValueSnipeEntry',
+      'buildBtc15mValueSnipeSystemSimulationMatrix',
+      'runBtc15mValueSnipeSystemSimulationMatrix',
+      'normalizeBtc15mValueSnipeConfig',
+      'BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST',
+      'DEFAULT_BTC15M_VALUE_SNIPE_CONFIG',
+    ] as const;
+    for (const name of names) {
+      expect(root[name]).toBeDefined();
+      expect(root[name]).toBe(btc15mValueSnipe[name]);
+    }
+    expect(root.BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST).toMatchObject({
+      executionPhase: 'HOST_EXECUTION_SUPPORTED',
+      supportedVenues: ['POLYMARKET', 'PREDICT_FUN'],
+    });
+    expect(root.runBtc15mValueSnipeSystemSimulationMatrix()).toHaveLength(20);
   });
 
   it('publishes a serializable strategy catalog without execution capabilities', () => {
@@ -161,21 +182,28 @@ describe('public API contract', () => {
         manifest: root.WEATHER_TEMPERATURE_STRATEGY_MANIFEST,
       }),
       expect.objectContaining({
-        key: 'ev-snipe',
-        module: 'ev-snipe',
-        autoTradeStrategyKeys: [],
-        manifest: root.EV_SNIPE_STRATEGY_MANIFEST,
+        key: 'hit-price-snipe',
+        module: 'hit-price-snipe',
+        autoTradeStrategyKeys: ['hit-price-snipe'],
+        manifest: root.HIT_PRICE_SNIPE_STRATEGY_MANIFEST,
+      }),
+      expect.objectContaining({
+        key: 'btc15m-value-snipe',
+        module: 'btc15m-value-snipe',
+        autoTradeStrategyKeys: ['btc15m-value-snipe'],
+        manifest: root.BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST,
       }),
     ]);
     for (const strategy of root.VIRAE_STRATEGY_CORE_CATALOG) {
       expect(strategy.capabilities).toMatchObject({
         decision: true,
-        orderIntents: true,
         replay: true,
         networkAccess: false,
         orderSubmission: false,
       });
     }
+    expect(root.VIRAE_STRATEGY_CORE_CATALOG.find(({ key }) => key === 'hit-price-snipe')?.capabilities.orderIntents).toBe(true);
+    expect(root.VIRAE_STRATEGY_CORE_CATALOG.find(({ key }) => key === 'btc15m-value-snipe')?.capabilities.orderIntents).toBe(false);
     expect(JSON.parse(JSON.stringify(root.VIRAE_STRATEGY_CORE_CATALOG)))
       .toEqual(root.VIRAE_STRATEGY_CORE_CATALOG);
   });

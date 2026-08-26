@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "packageVersion": "0.8.0",
+  "matrices": {
+    "hit-price-snipe": [
+      ["confirm-up-exact-boundary", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["confirm-down-exact-boundary", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["no-crossing", "WAIT", "NO_CROSSING"],
+      ["source-mismatch", "SKIP", "SOURCE_MISMATCH"],
+      ["symbol-mismatch", "SKIP", "SYMBOL_MISMATCH"],
+      ["stale-trigger", "SKIP", "STALE_TRIGGER"],
+      ["stale-source-transport", "SKIP", "STALE_TRIGGER"],
+      ["latency-exact-boundaries", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["stale-quote", "SKIP", "STALE_QUOTE"],
+      ["quote-age-exact-boundary", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["after-market-end", "SKIP", "MARKET_ENDED"],
+      ["price-above-limit", "SKIP", "PRICE_ABOVE_LIMIT"],
+      ["price-at-limit", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["insufficient-net-edge", "SKIP", "INSUFFICIENT_EDGE"],
+      ["fak-partial-fill", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["fak-no-fill", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["resolution-loss-tail", "ELIGIBLE", "TRIGGER_CONFIRMED"],
+      ["pre-hit-entered-with-probability", "ELIGIBLE", "PRE_HIT_ENTERED"],
+      ["pre-hit-probability-required", "SKIP", "PRE_HIT_PROBABILITY_REQUIRED"],
+      ["pre-hit-disabled-near-end", "SKIP", "PRE_HIT_DISABLED_NEAR_END"]
+    ],
+    "btc15m-value-snipe": [
+      ["polymarket-positive-edge", "ELIGIBLE", "ENTRY_READY"],
+      ["polymarket-edge-too-small", "WAIT", "VALUE_EDGE_TOO_SMALL"],
+      ["polymarket-invalid-all-in-cost", "SKIP", "ALL_IN_COST_INVALID"],
+      ["polymarket-oracle-stale", "SKIP", "CHAINLINK_STALE"],
+      ["polymarket-orderbook-stale", "SKIP", "ORDERBOOK_STALE"],
+      ["polymarket-settlement-unconfirmed", "SKIP", "SETTLEMENT_SOURCE_UNCONFIRMED"],
+      ["polymarket-price-model-mismatch", "SKIP", "VENUE_PRICE_MODEL_MISMATCH"],
+      ["polymarket-liquidity-low", "SKIP", "LIQUIDITY_TOO_LOW"],
+      ["polymarket-spread-wide", "SKIP", "SPREAD_TOO_WIDE"],
+      ["polymarket-after-window", "SKIP", "AFTER_ENTRY_WINDOW"],
+      ["predict_fun-positive-edge", "ELIGIBLE", "ENTRY_READY"],
+      ["predict_fun-edge-too-small", "WAIT", "VALUE_EDGE_TOO_SMALL"],
+      ["predict_fun-invalid-all-in-cost", "SKIP", "ALL_IN_COST_INVALID"],
+      ["predict_fun-oracle-stale", "SKIP", "CHAINLINK_STALE"],
+      ["predict_fun-orderbook-stale", "SKIP", "ORDERBOOK_STALE"],
+      ["predict_fun-settlement-unconfirmed", "SKIP", "SETTLEMENT_SOURCE_UNCONFIRMED"],
+      ["predict_fun-price-model-mismatch", "SKIP", "VENUE_PRICE_MODEL_MISMATCH"],
+      ["predict_fun-liquidity-low", "SKIP", "LIQUIDITY_TOO_LOW"],
+      ["predict_fun-spread-wide", "SKIP", "SPREAD_TOO_WIDE"],
+      ["predict_fun-after-window", "SKIP", "AFTER_ENTRY_WINDOW"]
+    ]
+  }
+}

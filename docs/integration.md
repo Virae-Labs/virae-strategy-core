@@ -41,7 +41,9 @@ For Musk tweet count, normalize one coherent active snapshot and optional earlie
 
 For Weather Temperature, verify the settlement station, timezone, temperature unit, target local date, metric, official resolution source, and bucket inclusivity before constructing probabilities. Call `decideWeatherTemperatureEntry` with the normalized entry config and explicit `nowSec`. Persist the forecast run key, ensemble health, candidate probabilities, quote timestamps, evaluations, diagnostics, and manifest. Recheck the selected quotes immediately before submission. For adjacent TOP2, claim the group before either leg, reconcile both independently, and define recovery for a partial group; venue execution is not atomic.
 
-For EV Snipe simulation, parse the official resolution text into a canonical `priceSource`, symbol, rule, strike, and market window before calling `decideEvSnipeEntry`. Persist both exchange and receive timestamps, quote time, effective fees, decision, and matrix/model version. Pre-hit requires an independently supplied probability and must be evaluated separately from Confirm-hit. There is no live-host contract in the current manifest; first replay `buildEvSnipeSystemSimulationMatrix()` through the host normalization adapter and retain the row-level results.
+For Hit Price Snipe, parse the official resolution text into a canonical `priceSource`, symbol, rule, strike, and market window before calling `decideHitPriceSnipeEntry`. Persist both exchange and receive timestamps, quote time, effective fees, decision, and matrix/model version. Pre-hit requires an independently supplied probability and must be evaluated separately from Confirm-hit. First replay `buildHitPriceSnipeSystemSimulationMatrix()` through the host normalization adapter and retain the row-level results.
+
+For BTC 15m Value Snipe, normalize the venue and its official settlement-price model, then calculate `estimatedAllInCost` from the executable quote, current fee schedule, host fee, and expected slippage. Never copy one venue's economics into the other. Replay both venue matrices through the host adapter before enabling paper or live execution.
 
 ## Minimal host adapter
 
@@ -95,7 +97,7 @@ The identifiers in this example are intentionally host-defined. Never use a rand
 - Confirm that the oracle and market settlement rule refer to the same asset, quote currency, window, and cutoff.
 - For Musk, normalize counter ranges and compare counter/orderbook timestamps using explicit host thresholds.
 - For Weather, use the settlement station's IANA timezone and strict local target date; verify forecast units, metric, bucket bounds, and resolution-source equivalence.
-- For EV Snipe, use milliseconds for trade/quote clocks, preserve consecutive trade ordering, and make the canonical trigger-source identity exactly match the parsed resolution-source identity.
+- For Hit Price Snipe, use milliseconds for trade/quote clocks, preserve consecutive trade ordering, and make the canonical trigger-source identity exactly match the parsed resolution-source identity.
 
 Do not combine snapshots acquired at materially different times without recording their timestamps. A coherent snapshot is more important than calling the policy frequently.
 
@@ -108,7 +110,8 @@ For every durable decision, record at least:
 - the applicable strategy manifest, including `PRE_MARKET_STRATEGY_MANIFEST` for Pre-M;
 - `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` and selector reason for Musk tweet-count decisions;
 - `WEATHER_TEMPERATURE_STRATEGY_MANIFEST`, forecast run key, station, target date, metric, and decision diagnostics for Weather Temperature;
-- `EV_SNIPE_STRATEGY_MANIFEST`, canonical resolution/trigger source, exchange/receive/evaluation timestamps, matrix scenario ID, and fee/edge model for EV Snipe;
+- `HIT_PRICE_SNIPE_STRATEGY_MANIFEST`, canonical resolution/trigger source, exchange/receive/evaluation timestamps, matrix scenario ID, and fee/edge model for Hit Price Snipe;
+- `BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST`, venue, settlement-price model, all-in-cost inputs, matrix scenario ID, and edge for BTC 15m Value Snipe;
 - package version from `@viraeai/virae-strategy-core/package.json`;
 - strategy definition/profile and execution mode;
 - round/market/token identifiers;
@@ -140,7 +143,8 @@ Before connecting the package to real funds, verify:
 - [ ] Musk intent keys are namespaced by account, task, and market lifecycle before durable deduplication;
 - [ ] Weather station/timezone/date/unit/metric and official resolution rules are verified before probability construction;
 - [ ] Weather forecast run and quote freshness are recorded, and TOP2 group claims/partial execution recovery are tested;
-- [ ] EV Snipe's complete system matrix passes through the host adapter, including source mismatch, stale data, FAK partial/no-fill, false resolution, and Pre-hit separation;
+- [ ] Hit Price Snipe's complete system matrix passes through the host adapter, including source mismatch, stale data, FAK partial/no-fill, false resolution, and Pre-hit separation;
+- [ ] Both BTC 15m Value Snipe venue matrices pass through their host adapters with independently calculated fee/slippage inputs;
 - [ ] every state-changing action has a traceable audit event;
 - [ ] paper replay and canary/shadow evidence exists for the exact version;
 - [ ] rollback means restoring both host code and the exact prior package version;

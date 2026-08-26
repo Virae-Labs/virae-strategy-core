@@ -1,36 +1,36 @@
 import {
-  buildEvSnipeSystemSimulationMatrix,
-  decideEvSnipeEntry,
-  runEvSnipeSystemSimulationMatrix,
-  simulateEvSnipeFill,
+  buildHitPriceSnipeSystemSimulationMatrix,
+  decideHitPriceSnipeEntry,
+  runHitPriceSnipeSystemSimulationMatrix,
+  simulateHitPriceSnipeFill,
 } from '..';
 
-describe('EV Snipe system simulation matrix', () => {
+describe('Hit Price Snipe system simulation matrix', () => {
   it('covers trigger, data-quality, execution, economics, and pre-hit boundaries', () => {
-    const matrix = buildEvSnipeSystemSimulationMatrix();
+    const matrix = buildHitPriceSnipeSystemSimulationMatrix();
     expect(matrix).toHaveLength(20);
     expect(new Set(matrix.map((row) => row.id)).size).toBe(matrix.length);
     expect(new Set(matrix.map((row) => row.category))).toEqual(new Set([
       'TRIGGER', 'DATA_QUALITY', 'EXECUTION', 'ECONOMICS', 'PRE_HIT',
     ]));
-    const results = runEvSnipeSystemSimulationMatrix(matrix);
+    const results = runHitPriceSnipeSystemSimulationMatrix(matrix);
     expect(results.filter((row) => !row.passed)).toEqual([]);
   });
 
   it('replays deterministically without mutating caller-owned scenarios', () => {
-    const matrix = buildEvSnipeSystemSimulationMatrix();
+    const matrix = buildHitPriceSnipeSystemSimulationMatrix();
     const before = JSON.parse(JSON.stringify(matrix));
-    expect(runEvSnipeSystemSimulationMatrix(matrix)).toEqual(runEvSnipeSystemSimulationMatrix(matrix));
+    expect(runHitPriceSnipeSystemSimulationMatrix(matrix)).toEqual(runHitPriceSnipeSystemSimulationMatrix(matrix));
     expect(matrix).toEqual(before);
   });
 
   it('models the small-win and large-loss asymmetry after protocol fees', () => {
-    const eligible = decideEvSnipeEntry(buildEvSnipeSystemSimulationMatrix()[0].input);
+    const eligible = decideHitPriceSnipeEntry(buildHitPriceSnipeSystemSimulationMatrix()[0].input);
     expect(eligible.intent).not.toBeNull();
-    const winning = simulateEvSnipeFill({
+    const winning = simulateHitPriceSnipeFill({
       intent: eligible.intent!, executionPrice: 0.99, availableAskNotionalUsd: 10, resolvedWinning: true,
     });
-    const losing = simulateEvSnipeFill({
+    const losing = simulateHitPriceSnipeFill({
       intent: eligible.intent!, executionPrice: 0.99, availableAskNotionalUsd: 10, resolvedWinning: false,
     });
     expect(winning.pnlUsd).toBeGreaterThan(0);
@@ -40,13 +40,13 @@ describe('EV Snipe system simulation matrix', () => {
   });
 
   it('rejects invalid fee models instead of returning misleading PnL', () => {
-    const eligible = decideEvSnipeEntry(buildEvSnipeSystemSimulationMatrix()[0].input);
-    expect(() => simulateEvSnipeFill({
+    const eligible = decideHitPriceSnipeEntry(buildHitPriceSnipeSystemSimulationMatrix()[0].input);
+    expect(() => simulateHitPriceSnipeFill({
       intent: eligible.intent!,
       executionPrice: 0.99,
       availableAskNotionalUsd: 10,
       resolvedWinning: true,
       takerFeeRate: -0.01,
-    })).toThrow('Invalid EV Snipe fill fee rate.');
+    })).toThrow('Invalid Hit Price Snipe fill fee rate.');
   });
 });

@@ -10,7 +10,8 @@ import * as cryptoTail from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
-import * as evSnipe from '@viraeai/virae-strategy-core/ev-snipe';
+import * as hitPriceSnipe from '@viraeai/virae-strategy-core/hit-price-snipe';
+import * as btc15mValueSnipe from '@viraeai/virae-strategy-core/btc15m-value-snipe';
 ```
 
 | Module | Primary decision/plan API | Manifest |
@@ -19,7 +20,8 @@ import * as evSnipe from '@viraeai/virae-strategy-core/ev-snipe';
 | `/pre-market` | `buildPreMarketEntryPlan` | `PRE_MARKET_STRATEGY_MANIFEST` |
 | `/musk-tweet-count` | `decideMuskTweetCountEntry` | `MUSK_TWEET_COUNT_STRATEGY_MANIFEST` |
 | `/weather-temperature` | `decideWeatherTemperatureEntry` | `WEATHER_TEMPERATURE_STRATEGY_MANIFEST` |
-| `/ev-snipe` | `decideEvSnipeEntry`, `runEvSnipeSystemSimulationMatrix` | `EV_SNIPE_STRATEGY_MANIFEST` |
+| `/hit-price-snipe` | `decideHitPriceSnipeEntry`, `runHitPriceSnipeSystemSimulationMatrix` | `HIT_PRICE_SNIPE_STRATEGY_MANIFEST` |
+| `/btc15m-value-snipe` | `decideBtc15mValueSnipeEntry`, `runBtc15mValueSnipeSystemSimulationMatrix` | `BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST` |
 
 `VIRAE_STRATEGY_CORE_CATALOG` is the machine-readable source for strategy key, module, hosted Auto Trade keys, capability flags, and manifest. Read the installed package version from its `package.json`; it is intentionally not duplicated in the catalog.
 
@@ -80,16 +82,25 @@ The primary decision validates malformed runtime inputs and fails closed. The no
 
 See [Weather Temperature strategy design](./strategy/weather-temperature.md).
 
-## EV Snipe
+## Hit Price Snipe
 
-- `decideEvSnipeEntry(input)` evaluates a normalized Confirm-hit or Pre-hit snapshot and returns `WAIT`, `SKIP`, or `ELIGIBLE` with a typed reason and optional BUY/FAK intent.
-- `estimateEvSnipeNetEdgeBps(params)` applies the explicit probability, price, protocol-fee, and builder-fee model.
-- `simulateEvSnipeFill(input)` models FAK no-fill, partial/full fill, binary payout, fees, and PnL.
-- `buildEvSnipeSystemSimulationMatrix()` returns the version-controlled system scenario corpus.
-- `runEvSnipeSystemSimulationMatrix(matrix?)` evaluates the corpus and returns row-level mismatches.
-- `DEFAULT_EV_SNIPE_STRATEGY_CONFIG` and `EV_SNIPE_STRATEGY_MANIFEST` are public reference exports.
+- `decideHitPriceSnipeEntry(input)` evaluates a normalized Confirm-hit or Pre-hit snapshot and returns `WAIT`, `SKIP`, or `ELIGIBLE` with a typed reason and optional BUY/FAK intent.
+- `estimateHitPriceSnipeNetEdgeBps(params)` applies the explicit probability, price, protocol-fee, and builder-fee model.
+- `simulateHitPriceSnipeFill(input)` models FAK no-fill, partial/full fill, binary payout, fees, and PnL.
+- `buildHitPriceSnipeSystemSimulationMatrix()` returns the version-controlled system scenario corpus.
+- `runHitPriceSnipeSystemSimulationMatrix(matrix?)` evaluates the corpus and returns row-level mismatches.
+- `DEFAULT_HIT_PRICE_SNIPE_STRATEGY_CONFIG` and `HIT_PRICE_SNIPE_STRATEGY_MANIFEST` are public reference exports.
 
-The manifest is `SIMULATION_ONLY`; the catalog therefore has no hosted Auto Trade key for EV Snipe. See [EV Snipe simulation contract](./strategy/ev-snipe.md).
+See [Hit Price Snipe contract](./strategy/hit-price-snipe.md).
+
+## BTC 15m Value Snipe
+
+- `decideBtc15mValueSnipeEntry(input)` applies recurring BTC 15m gates plus an explicit venue price-model and value-edge check.
+- `buildBtc15mValueSnipeSystemSimulationMatrix(venue)` builds ten deterministic rows for either `POLYMARKET` or `PREDICT_FUN`.
+- `runBtc15mValueSnipeSystemSimulationMatrix(matrix?)` runs a supplied matrix, or both venue matrices by default.
+- `DEFAULT_BTC15M_VALUE_SNIPE_CONFIG`, `BTC15M_VALUE_SNIPE_VENUES`, and `BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST` are public reference exports.
+
+The host must calculate and pass `estimatedAllInCost`; Strategy Core does not guess venue fees or slippage. See [BTC 15m Value Snipe contract](./strategy/btc15m-value-snipe.md).
 
 ## Common integration rules
 

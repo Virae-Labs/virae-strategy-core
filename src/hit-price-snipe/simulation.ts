@@ -1,16 +1,16 @@
-import { DEFAULT_EV_SNIPE_STRATEGY_CONFIG } from './config';
-import { decideEvSnipeEntry } from './decision';
+import { DEFAULT_HIT_PRICE_SNIPE_STRATEGY_CONFIG } from './config';
+import { decideHitPriceSnipeEntry } from './decision';
 import type {
-  EvSnipeDecisionInput,
-  EvSnipeFillSimulationInput,
-  EvSnipeFillSimulationResult,
-  EvSnipeSimulationRowResult,
-  EvSnipeSimulationScenario,
+  HitPriceSnipeDecisionInput,
+  HitPriceSnipeFillSimulationInput,
+  HitPriceSnipeFillSimulationResult,
+  HitPriceSnipeSimulationRowResult,
+  HitPriceSnipeSimulationScenario,
 } from './types';
 
 const BASE_TIME_MS = 2_000_000_000_000;
 
-function baseInput(): EvSnipeDecisionInput {
+function baseInput(): HitPriceSnipeDecisionInput {
   return {
     market: {
       conditionId: 'condition-btc-100k',
@@ -43,18 +43,18 @@ function baseInput(): EvSnipeDecisionInput {
 
 function scenario(
   id: string,
-  category: EvSnipeSimulationScenario['category'],
+  category: HitPriceSnipeSimulationScenario['category'],
   description: string,
-  mutate: (input: EvSnipeDecisionInput) => void,
-  expected: EvSnipeSimulationScenario['expected'],
-  fill?: EvSnipeSimulationScenario['fill'],
-): EvSnipeSimulationScenario {
+  mutate: (input: HitPriceSnipeDecisionInput) => void,
+  expected: HitPriceSnipeSimulationScenario['expected'],
+  fill?: HitPriceSnipeSimulationScenario['fill'],
+): HitPriceSnipeSimulationScenario {
   const input = baseInput();
   mutate(input);
   return { id, category, description, input, expected, fill };
 }
 
-export function buildEvSnipeSystemSimulationMatrix(): EvSnipeSimulationScenario[] {
+export function buildHitPriceSnipeSystemSimulationMatrix(): HitPriceSnipeSimulationScenario[] {
   return [
     scenario('confirm-up-exact-boundary', 'TRIGGER', 'Up trigger accepts an exact >= strike crossing.', () => {},
       { decision: 'ELIGIBLE', reasonCode: 'TRIGGER_CONFIRMED', fillStatus: 'FILLED', pnlSign: 'POSITIVE' },
@@ -122,19 +122,19 @@ export function buildEvSnipeSystemSimulationMatrix(): EvSnipeSimulationScenario[
     }, { decision: 'SKIP', reasonCode: 'PRE_HIT_PROBABILITY_REQUIRED' }),
     scenario('pre-hit-disabled-near-end', 'PRE_HIT', 'Pre-hit fails closed inside the configured cutoff window.', (input) => {
       input.config = { triggerMode: 'PRE_HIT', maxBuyPrice: 0.85 };
-      input.market.endTimeMs = input.tick.exchangeTimeMs + DEFAULT_EV_SNIPE_STRATEGY_CONFIG.preHitDisableBeforeEndMs;
+      input.market.endTimeMs = input.tick.exchangeTimeMs + DEFAULT_HIT_PRICE_SNIPE_STRATEGY_CONFIG.preHitDisableBeforeEndMs;
       input.tick.previousPrice = 99_980; input.tick.price = 99_995; input.quote.bestAsk = 0.80;
       input.estimatedWinProbability = 0.90;
     }, { decision: 'SKIP', reasonCode: 'PRE_HIT_DISABLED_NEAR_END' }),
   ];
 }
 
-export function simulateEvSnipeFill(input: EvSnipeFillSimulationInput): EvSnipeFillSimulationResult {
-  const takerFeeRate = input.takerFeeRate ?? DEFAULT_EV_SNIPE_STRATEGY_CONFIG.takerFeeRate;
-  const builderFeeRate = input.builderFeeRate ?? DEFAULT_EV_SNIPE_STRATEGY_CONFIG.builderFeeRate;
+export function simulateHitPriceSnipeFill(input: HitPriceSnipeFillSimulationInput): HitPriceSnipeFillSimulationResult {
+  const takerFeeRate = input.takerFeeRate ?? DEFAULT_HIT_PRICE_SNIPE_STRATEGY_CONFIG.takerFeeRate;
+  const builderFeeRate = input.builderFeeRate ?? DEFAULT_HIT_PRICE_SNIPE_STRATEGY_CONFIG.builderFeeRate;
   if (!Number.isFinite(takerFeeRate) || takerFeeRate < 0 || takerFeeRate > 1
     || !Number.isFinite(builderFeeRate) || builderFeeRate < 0 || builderFeeRate > 1) {
-    throw new Error('Invalid EV Snipe fill fee rate.');
+    throw new Error('Invalid Hit Price Snipe fill fee rate.');
   }
   const validExecutionPrice = input.executionPrice !== null
     && Number.isFinite(input.executionPrice)
@@ -165,20 +165,20 @@ export function simulateEvSnipeFill(input: EvSnipeFillSimulationInput): EvSnipeF
   };
 }
 
-function pnlSign(pnlUsd: number | null): NonNullable<EvSnipeSimulationScenario['expected']['pnlSign']> {
+function pnlSign(pnlUsd: number | null): NonNullable<HitPriceSnipeSimulationScenario['expected']['pnlSign']> {
   if (pnlUsd === null) return 'PENDING';
   if (pnlUsd > 0) return 'POSITIVE';
   if (pnlUsd < 0) return 'NEGATIVE';
   return 'ZERO';
 }
 
-export function runEvSnipeSystemSimulationMatrix(
-  matrix: readonly EvSnipeSimulationScenario[] = buildEvSnipeSystemSimulationMatrix(),
-): EvSnipeSimulationRowResult[] {
+export function runHitPriceSnipeSystemSimulationMatrix(
+  matrix: readonly HitPriceSnipeSimulationScenario[] = buildHitPriceSnipeSystemSimulationMatrix(),
+): HitPriceSnipeSimulationRowResult[] {
   return matrix.map((scenarioRow) => {
-    const decision = decideEvSnipeEntry(scenarioRow.input);
+    const decision = decideHitPriceSnipeEntry(scenarioRow.input);
     const fill = decision.intent && scenarioRow.fill
-      ? simulateEvSnipeFill({ intent: decision.intent, ...scenarioRow.fill })
+      ? simulateHitPriceSnipeFill({ intent: decision.intent, ...scenarioRow.fill })
       : null;
     const mismatches: string[] = [];
     if (decision.decision !== scenarioRow.expected.decision) mismatches.push(`decision:${decision.decision}`);

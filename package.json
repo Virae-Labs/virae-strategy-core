@@ -1,6 +1,6 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Deterministic, side-effect-free prediction-market strategy decisions, execution policies, and replay contracts.",
   "keywords": [
     "prediction-markets",
@@ -37,8 +37,11 @@
       "weather-temperature": [
         "dist/weather-temperature/index.d.ts"
       ],
-      "ev-snipe": [
-        "dist/ev-snipe/index.d.ts"
+      "hit-price-snipe": [
+        "dist/hit-price-snipe/index.d.ts"
+      ],
+      "btc15m-value-snipe": [
+        "dist/btc15m-value-snipe/index.d.ts"
       ]
     }
   },
@@ -68,10 +71,15 @@
       "require": "./dist/weather-temperature/index.js",
       "default": "./dist/weather-temperature/index.js"
     },
-    "./ev-snipe": {
-      "types": "./dist/ev-snipe/index.d.ts",
-      "require": "./dist/ev-snipe/index.js",
-      "default": "./dist/ev-snipe/index.js"
+    "./hit-price-snipe": {
+      "types": "./dist/hit-price-snipe/index.d.ts",
+      "require": "./dist/hit-price-snipe/index.js",
+      "default": "./dist/hit-price-snipe/index.js"
+    },
+    "./btc15m-value-snipe": {
+      "types": "./dist/btc15m-value-snipe/index.d.ts",
+      "require": "./dist/btc15m-value-snipe/index.js",
+      "default": "./dist/btc15m-value-snipe/index.js"
     },
     "./skills/*": "./skills/*",
     "./package.json": "./package.json"

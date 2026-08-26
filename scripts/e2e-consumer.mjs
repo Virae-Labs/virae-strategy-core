@@ -56,16 +56,20 @@ try {
     'dist/musk-tweet-count/index.d.ts',
     'dist/weather-temperature/index.js',
     'dist/weather-temperature/index.d.ts',
-    'dist/ev-snipe/index.js',
-    'dist/ev-snipe/index.d.ts',
+    'dist/hit-price-snipe/index.js',
+    'dist/hit-price-snipe/index.d.ts',
+    'dist/btc15m-value-snipe/index.js',
+    'dist/btc15m-value-snipe/index.d.ts',
     'docs/strategy/musk-tweet-count.md',
     'docs/strategy/crypto-tail.md',
     'docs/strategy/pre-market.md',
     'docs/strategy/weather-temperature.md',
-    'docs/strategy/ev-snipe.md',
+    'docs/strategy/hit-price-snipe.md',
+    'docs/strategy/btc15m-value-snipe.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
     'fixtures/replay/crypto-tail-safety-v0.7.0.json',
+    'fixtures/replay/snipe-system-v0.8.0.json',
     'skills/virae-strategy-core/SKILL.md',
     'skills/virae-strategy-core/agents/openai.yaml',
     'skills/virae-strategy-core/scripts/list-strategies.mjs',
@@ -105,7 +109,8 @@ const subpath = require('@viraeai/virae-strategy-core/crypto-tail');
 const preMarket = require('@viraeai/virae-strategy-core/pre-market');
 const muskTweetCount = require('@viraeai/virae-strategy-core/musk-tweet-count');
 const weatherTemperature = require('@viraeai/virae-strategy-core/weather-temperature');
-const evSnipe = require('@viraeai/virae-strategy-core/ev-snipe');
+const hitPriceSnipe = require('@viraeai/virae-strategy-core/hit-price-snipe');
+const btc15mValueSnipe = require('@viraeai/virae-strategy-core/btc15m-value-snipe');
 const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
@@ -117,8 +122,11 @@ assert.equal(root.decideMuskTweetCountEntry, muskTweetCount.decideMuskTweetCount
 assert.equal(muskTweetCount.DEFAULT_MUSK_TWEET_STRATEGY_CONFIG.entry.maxNotionalUsd, 1000);
 assert.equal(root.decideWeatherTemperatureEntry, weatherTemperature.decideWeatherTemperatureEntry);
 assert.equal(weatherTemperature.WEATHER_TEMPERATURE_STRATEGY_MANIFEST.modelVersion, 'weather-gfs-v3');
-assert.equal(root.runEvSnipeSystemSimulationMatrix, evSnipe.runEvSnipeSystemSimulationMatrix);
-assert.equal(evSnipe.runEvSnipeSystemSimulationMatrix().every((row) => row.passed), true);
+assert.equal(root.runHitPriceSnipeSystemSimulationMatrix, hitPriceSnipe.runHitPriceSnipeSystemSimulationMatrix);
+assert.equal(hitPriceSnipe.runHitPriceSnipeSystemSimulationMatrix().every((row) => row.passed), true);
+assert.equal(root.runBtc15mValueSnipeSystemSimulationMatrix, btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix);
+assert.equal(btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix().length, 20);
+assert.equal(btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix().every((row) => row.passed), true);
 const nowSec = 2000000000;
 const nowIso = new Date(nowSec * 1000).toISOString();
 const muskMarket = {
@@ -141,7 +149,8 @@ const muskDecision = muskTweetCount.decideMuskTweetCountEntry({
 });
 assert.equal(muskDecision.reasonCode, 'CURRENT_MARKET_INTENT');
 assert.equal(muskDecision.selectedIntent.amount, 187.5);
-assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature', 'ev-snipe']);
+assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature', 'hit-price-snipe', 'btc15m-value-snipe']);
+assert.throws(() => require('@viraeai/virae-strategy-core/ev-snipe'), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
 
@@ -152,13 +161,15 @@ import * as subpath from '@viraeai/virae-strategy-core/crypto-tail';
 import * as preMarket from '@viraeai/virae-strategy-core/pre-market';
 import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
-import * as evSnipe from '@viraeai/virae-strategy-core/ev-snipe';
+import * as hitPriceSnipe from '@viraeai/virae-strategy-core/hit-price-snipe';
+import * as btc15mValueSnipe from '@viraeai/virae-strategy-core/btc15m-value-snipe';
 assert.equal(typeof root.decideCryptoTailEntry, 'function');
 assert.equal(typeof subpath.buildCryptoTailEntryExecutionPlan, 'function');
 assert.equal(typeof preMarket.buildPreMarketEntryPlan, 'function');
 assert.equal(typeof muskTweetCount.decideMuskTweetCountEntry, 'function');
 assert.equal(typeof weatherTemperature.decideWeatherTemperatureEntry, 'function');
-assert.equal(typeof evSnipe.runEvSnipeSystemSimulationMatrix, 'function');
+assert.equal(typeof hitPriceSnipe.runHitPriceSnipeSystemSimulationMatrix, 'function');
+assert.equal(typeof btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix, 'function');
 `);
   run(process.execPath, ['consumer.mjs'], consumerRoot);
 
@@ -194,9 +205,12 @@ const weatherOutput = evaluate('weather-temperature-entry', {
 });
 assert.equal(weatherOutput.result.reasonCode, 'ENTRY_INTENTS');
 assert.equal(weatherOutput.result.intents.length, 1);
-const evSnipeOutput = evaluate('ev-snipe-system-matrix', {});
-assert.equal(evSnipeOutput.count, 20);
-assert.equal(evSnipeOutput.results.every((row) => row.passed), true);
+const hitPriceOutput = evaluate('hit-price-snipe-system-matrix', {});
+assert.equal(hitPriceOutput.count, 20);
+assert.equal(hitPriceOutput.results.every((row) => row.passed), true);
+const valueOutput = evaluate('btc15m-value-snipe-system-matrix', {});
+assert.equal(valueOutput.count, 20);
+assert.equal(valueOutput.results.every((row) => row.passed), true);
 `);
   run(process.execPath, ['skill-consumer.mjs'], consumerRoot);
 
@@ -215,8 +229,11 @@ import {
   type MuskTweetSnapshot,
 } from '@viraeai/virae-strategy-core/musk-tweet-count';
 import {
-  runEvSnipeSystemSimulationMatrix,
-} from '@viraeai/virae-strategy-core/ev-snipe';
+  runHitPriceSnipeSystemSimulationMatrix,
+} from '@viraeai/virae-strategy-core/hit-price-snipe';
+import {
+  runBtc15mValueSnipeSystemSimulationMatrix,
+} from '@viraeai/virae-strategy-core/btc15m-value-snipe';
 const input = null as unknown as CryptoTailDecisionInput;
 if (input) decideCryptoTailEntry(input);
 const policyVersion: number = CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion;
@@ -225,7 +242,8 @@ const round = null as unknown as PreMarketRoundInput;
 if (round) buildPreMarketEntryPlan({ round });
 const muskSnapshot = null as unknown as MuskTweetSnapshot;
 if (muskSnapshot) decideMuskTweetCountEntry({ currentSnapshot: muskSnapshot, config: {} as never, nowSec: 0 });
-runEvSnipeSystemSimulationMatrix();
+runHitPriceSnipeSystemSimulationMatrix();
+runBtc15mValueSnipeSystemSimulationMatrix();
 `);
   const tsc = join(projectRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc');
   for (const [name, moduleResolution, module] of [
@@ -253,12 +271,13 @@ runEvSnipeSystemSimulationMatrix();
   ));
   assert.equal(installedMetadata.sideEffects, false);
   assert.deepEqual(readdirSync(join(consumerRoot, 'node_modules', '@viraeai', 'virae-strategy-core', 'dist')).sort(), [
+    'btc15m-value-snipe',
     'catalog.d.ts',
     'catalog.d.ts.map',
     'catalog.js',
     'catalog.js.map',
     'crypto-tail',
-    'ev-snipe',
+    'hit-price-snipe',
     'index.d.ts',
     'index.d.ts.map',
     'index.js',
