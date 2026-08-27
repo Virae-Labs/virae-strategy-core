@@ -60,16 +60,20 @@ try {
     'dist/hit-price-snipe/index.d.ts',
     'dist/btc15m-value-snipe/index.js',
     'dist/btc15m-value-snipe/index.d.ts',
+    'dist/memecoin-momentum-guard/index.js',
+    'dist/memecoin-momentum-guard/index.d.ts',
     'docs/strategy/musk-tweet-count.md',
     'docs/strategy/crypto-tail.md',
     'docs/strategy/pre-market.md',
     'docs/strategy/weather-temperature.md',
     'docs/strategy/hit-price-snipe.md',
     'docs/strategy/btc15m-value-snipe.md',
+    'docs/strategy/memecoin-momentum-guard.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
     'fixtures/replay/crypto-tail-safety-v0.7.0.json',
     'fixtures/replay/snipe-system-v0.8.0.json',
+    'fixtures/replay/memecoin-momentum-guard-v0.9.0.json',
     'skills/virae-strategy-core/SKILL.md',
     'skills/virae-strategy-core/agents/openai.yaml',
     'skills/virae-strategy-core/scripts/list-strategies.mjs',
@@ -111,6 +115,7 @@ const muskTweetCount = require('@viraeai/virae-strategy-core/musk-tweet-count');
 const weatherTemperature = require('@viraeai/virae-strategy-core/weather-temperature');
 const hitPriceSnipe = require('@viraeai/virae-strategy-core/hit-price-snipe');
 const btc15mValueSnipe = require('@viraeai/virae-strategy-core/btc15m-value-snipe');
+const memecoinMomentumGuard = require('@viraeai/virae-strategy-core/memecoin-momentum-guard');
 const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
@@ -127,6 +132,9 @@ assert.equal(hitPriceSnipe.runHitPriceSnipeSystemSimulationMatrix().every((row) 
 assert.equal(root.runBtc15mValueSnipeSystemSimulationMatrix, btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix);
 assert.equal(btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix().length, 20);
 assert.equal(btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix().every((row) => row.passed), true);
+assert.equal(root.decideMemecoinMomentumEntry, memecoinMomentumGuard.decideMemecoinMomentumEntry);
+assert.equal(memecoinMomentumGuard.runMemecoinMomentumGuardSimulationMatrix().length, 15);
+assert.equal(memecoinMomentumGuard.runMemecoinMomentumGuardSimulationMatrix().every((row) => row.passed), true);
 const nowSec = 2000000000;
 const nowIso = new Date(nowSec * 1000).toISOString();
 const muskMarket = {
@@ -149,7 +157,7 @@ const muskDecision = muskTweetCount.decideMuskTweetCountEntry({
 });
 assert.equal(muskDecision.reasonCode, 'CURRENT_MARKET_INTENT');
 assert.equal(muskDecision.selectedIntent.amount, 187.5);
-assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature', 'hit-price-snipe', 'btc15m-value-snipe']);
+assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature', 'hit-price-snipe', 'btc15m-value-snipe', 'memecoin-momentum-guard']);
 assert.throws(() => require('@viraeai/virae-strategy-core/ev-snipe'), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
@@ -163,6 +171,7 @@ import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
 import * as hitPriceSnipe from '@viraeai/virae-strategy-core/hit-price-snipe';
 import * as btc15mValueSnipe from '@viraeai/virae-strategy-core/btc15m-value-snipe';
+import * as memecoinMomentumGuard from '@viraeai/virae-strategy-core/memecoin-momentum-guard';
 assert.equal(typeof root.decideCryptoTailEntry, 'function');
 assert.equal(typeof subpath.buildCryptoTailEntryExecutionPlan, 'function');
 assert.equal(typeof preMarket.buildPreMarketEntryPlan, 'function');
@@ -170,6 +179,7 @@ assert.equal(typeof muskTweetCount.decideMuskTweetCountEntry, 'function');
 assert.equal(typeof weatherTemperature.decideWeatherTemperatureEntry, 'function');
 assert.equal(typeof hitPriceSnipe.runHitPriceSnipeSystemSimulationMatrix, 'function');
 assert.equal(typeof btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix, 'function');
+assert.equal(typeof memecoinMomentumGuard.decideMemecoinMomentumEntry, 'function');
 `);
   run(process.execPath, ['consumer.mjs'], consumerRoot);
 
@@ -211,6 +221,9 @@ assert.equal(hitPriceOutput.results.every((row) => row.passed), true);
 const valueOutput = evaluate('btc15m-value-snipe-system-matrix', {});
 assert.equal(valueOutput.count, 20);
 assert.equal(valueOutput.results.every((row) => row.passed), true);
+const memecoinOutput = evaluate('memecoin-momentum-system-matrix', {});
+assert.equal(memecoinOutput.count, 15);
+assert.equal(memecoinOutput.results.every((row) => row.passed), true);
 `);
   run(process.execPath, ['skill-consumer.mjs'], consumerRoot);
 
@@ -234,6 +247,10 @@ import {
 import {
   runBtc15mValueSnipeSystemSimulationMatrix,
 } from '@viraeai/virae-strategy-core/btc15m-value-snipe';
+import {
+  decideMemecoinMomentumEntry,
+  type MemecoinMomentumEntryInput,
+} from '@viraeai/virae-strategy-core/memecoin-momentum-guard';
 const input = null as unknown as CryptoTailDecisionInput;
 if (input) decideCryptoTailEntry(input);
 const policyVersion: number = CRYPTO_TAIL_STRATEGY_MANIFEST.executionPolicyVersion;
@@ -244,6 +261,8 @@ const muskSnapshot = null as unknown as MuskTweetSnapshot;
 if (muskSnapshot) decideMuskTweetCountEntry({ currentSnapshot: muskSnapshot, config: {} as never, nowSec: 0 });
 runHitPriceSnipeSystemSimulationMatrix();
 runBtc15mValueSnipeSystemSimulationMatrix();
+const memecoinInput = null as unknown as MemecoinMomentumEntryInput;
+if (memecoinInput) decideMemecoinMomentumEntry(memecoinInput);
 `);
   const tsc = join(projectRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc');
   for (const [name, moduleResolution, module] of [
@@ -282,6 +301,7 @@ runBtc15mValueSnipeSystemSimulationMatrix();
     'index.d.ts.map',
     'index.js',
     'index.js.map',
+    'memecoin-momentum-guard',
     'musk-tweet-count',
     'pre-market',
     'weather-temperature',

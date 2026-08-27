@@ -1,6 +1,6 @@
 ---
 name: virae-strategy-core
-description: Evaluate, explain, and replay Virae prediction-market strategies locally with @viraeai/virae-strategy-core. Use for Crypto Tail, Pre-M, Musk Tweet Count, Weather Temperature, Hit Price Snipe, or venue-aware BTC 15m Value Snipe logic, deterministic decisions or order intents from supplied snapshots, local replay, or comparison with Virae Auto Trade. This skill never fetches market data, accesses wallets, signs transactions, or submits orders.
+description: Evaluate, explain, and replay Virae trading strategies locally with @viraeai/virae-strategy-core. Use for Crypto Tail, Pre-M, Musk Tweet Count, Weather Temperature, Hit Price Snipe, venue-aware BTC 15m Value Snipe, or Memecoin Momentum Guard logic, deterministic decisions or order intents from supplied snapshots, local replay, or comparison with Virae Agents. This skill never fetches market data, accesses wallets, signs transactions, or submits orders.
 ---
 
 # Virae Strategy Core
@@ -40,6 +40,9 @@ Accept only a local JSON file supplied or approved by the user. The operation na
 - `hit-price-snipe-system-matrix`: run the built-in Hit Price matrix, or an optional `matrix` array supplied in the input JSON.
 - `btc15m-value-snipe-entry`: evaluate one normalized recurring BTC 15m snapshot. Requires `venue`, `estimatedAllInCost`, and `config.minEdgeBps`.
 - `btc15m-value-snipe-system-matrix`: run both venue matrices, one matrix selected by `venue`, or an optional `matrix` array.
+- `memecoin-momentum-entry`: evaluate one normalized Solana observation, risk state, and executable quote.
+- `memecoin-momentum-exit`: evaluate executable sell proceeds against TP, SL, risk-stop, and maximum-hold rules.
+- `memecoin-momentum-system-matrix`: run the built-in 15-row Momentum Guard matrix or an optional `matrix` array.
 
 Run:
 
@@ -56,6 +59,8 @@ For `weather-temperature-entry`, require `snapshot`, normalized entry `config`, 
 For Hit Price Snipe, never infer resolution-source equivalence from a market title. Require canonical source identity, consecutive trade prices, exchange/receive/evaluation timestamps, and an executable quote. Pre-hit also requires an explicit probability.
 
 For BTC 15m Value Snipe, never invent venue fees or slippage. Require the host-provided effective `estimatedAllInCost`, preserve the venue's official settlement-price model, and report Polymarket and Predict.fun matrix results separately when comparing venues.
+
+For Memecoin Momentum Guard, never fetch or infer token security, route availability, source freshness, executable quote impact, pool ratio, or sellability. `ELIGIBLE` remains a candidate for a durable host claim; it is not a submitted swap. Exit evaluation requires executable sell proceeds rather than a display spot price.
 
 ## Replay snapshots
 

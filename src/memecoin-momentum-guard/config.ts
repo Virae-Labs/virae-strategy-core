@@ -1,0 +1,26 @@
+import type { MemecoinMomentumGuardConfig } from './types';
+
+export const DEFAULT_MEMECOIN_MOMENTUM_GUARD_CONFIG: Readonly<MemecoinMomentumGuardConfig> = {
+  minPairAgeSec: 6 * 60 * 60,
+  maxObservationAgeSec: 30,
+  minLiquidityUsd: 50_000,
+  minVolume24hUsd: 25_000,
+  minTxns24h: 100,
+  minPriceChange1hPct: 5,
+  maxPriceChange1hPct: 35,
+  minVolumeAnomaly: 2.5,
+  minBuySharePct: 62,
+  maxBuySharePct: 85,
+  minSignalContinuityCount: 2,
+  maxQuoteAgeSec: 10,
+  minQuoteValidityRemainingSec: 15,
+  maxPriceImpactPct: 3,
+  maxOrderPoolRatioPct: 0.5,
+  perOrderNotionalUsd: 20,
+  maxOpenPositions: 2,
+  maxDailyNotionalUsd: 100,
+  maxDailyLossUsd: 20,
+  takeProfitPct: 20,
+  stopLossPct: 8,
+  maxHoldSec: 2 * 60 * 60,
+};

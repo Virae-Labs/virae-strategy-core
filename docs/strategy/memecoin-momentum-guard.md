@@ -1,0 +1,35 @@
+# Memecoin Momentum Guard
+
+Memecoin Momentum Guard is a deterministic Solana strategy contract for a host-provided dynamic token universe. It does not discover tokens or call a quote provider. It evaluates one normalized observation and one executable quote at a caller-provided time.
+
+## Entry contract
+
+The default profile requires:
+
+- a pair at least six hours old;
+- fresh observations with at least USD 50,000 liquidity, USD 25,000 trailing 24-hour volume, and 100 trailing transactions;
+- one-hour price momentum between 5% and 35%;
+- a momentum-breakout signal plus volume-surge or buy-pressure confirmation;
+- at least two continuous signal observations, 2.5x hourly volume anomaly, and buy participation between 62% and 85%;
+- known non-honeypot security evidence, active DEX state, and a host-confirmed buy route;
+- a fresh executable quote with verified sellability, no more than 3% impact, no more than 0.5% order-to-pool ratio, and at least 15 seconds of remaining validity;
+- task open-position, cooldown, daily notional, and realized-loss limits.
+
+`ELIGIBLE` is not authorization to submit. The host must create a durable unique claim, re-read the task and risk state, revalidate the quote and balance, and only then execute through its venue adapter.
+
+## Exit contract
+
+Exit evaluation uses host-supplied executable sell proceeds, never a display spot price. The default profile emits `EXIT` for:
+
+- 20% take profit;
+- 8% stop loss;
+- a fresh risk warning;
+- a two-hour maximum holding time.
+
+Missing sell routes fail closed. Missing executable proceeds return `HOLD / SELL_QUOTE_REQUIRED`; the host must retry within a bounded monitored lifecycle rather than treating the position as protected.
+
+## Data and safety boundary
+
+The host owns discovery, source freshness, security-provider semantics, quote construction, wallets, signing, idempotency, submission, chain confirmation, PnL accounting, fee accounting, scheduling, monitoring, geographic controls, and kill switches. Unknown broadcast outcomes must be reconciled before retry.
+
+The default thresholds are explicit experimental parameters, not profitability claims. Collect survivorship-safe observations and executable quotes, run the deterministic matrix through the host adapter, and validate Paper evidence before enabling real funds.

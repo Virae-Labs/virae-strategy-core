@@ -1,14 +1,15 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.8.1",
-  "description": "Deterministic, side-effect-free prediction-market strategy decisions, execution policies, and replay contracts.",
+  "version": "0.9.0",
+  "description": "Deterministic, side-effect-free trading strategy decisions, execution policies, and replay contracts.",
   "keywords": [
     "prediction-markets",
     "trading-strategy",
     "polymarket",
     "typescript",
     "backtesting",
-    "crypto"
+    "crypto",
+    "memecoin"
   ],
   "license": "CPAL-1.0",
   "sideEffects": false,
@@ -42,6 +43,9 @@
       ],
       "btc15m-value-snipe": [
         "dist/btc15m-value-snipe/index.d.ts"
+      ],
+      "memecoin-momentum-guard": [
+        "dist/memecoin-momentum-guard/index.d.ts"
       ]
     }
   },
@@ -80,6 +84,11 @@
       "types": "./dist/btc15m-value-snipe/index.d.ts",
       "require": "./dist/btc15m-value-snipe/index.js",
       "default": "./dist/btc15m-value-snipe/index.js"
+    },
+    "./memecoin-momentum-guard": {
+      "types": "./dist/memecoin-momentum-guard/index.d.ts",
+      "require": "./dist/memecoin-momentum-guard/index.js",
+      "default": "./dist/memecoin-momentum-guard/index.js"
     },
     "./skills/*": "./skills/*",
     "./package.json": "./package.json"

@@ -5,6 +5,7 @@ import * as muskTweetCount from '../../src/musk-tweet-count';
 import * as weatherTemperature from '../../src/weather-temperature';
 import * as hitPriceSnipe from '../../src/hit-price-snipe';
 import * as btc15mValueSnipe from '../../src/btc15m-value-snipe';
+import * as memecoinMomentumGuard from '../../src/memecoin-momentum-guard';
 
 describe('public API contract', () => {
   it('exports the generic strategy surface from root and subpath entry points', () => {
@@ -152,6 +153,26 @@ describe('public API contract', () => {
     expect(root.runBtc15mValueSnipeSystemSimulationMatrix()).toHaveLength(20);
   });
 
+  it('exports the Memecoin Momentum Guard surface', () => {
+    const names = [
+      'decideMemecoinMomentumEntry',
+      'decideMemecoinMomentumExit',
+      'buildMemecoinMomentumGuardSimulationMatrix',
+      'runMemecoinMomentumGuardSimulationMatrix',
+      'MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST',
+      'DEFAULT_MEMECOIN_MOMENTUM_GUARD_CONFIG',
+    ] as const;
+    for (const name of names) {
+      expect(root[name]).toBeDefined();
+      expect(root[name]).toBe(memecoinMomentumGuard[name]);
+    }
+    expect(root.MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST).toMatchObject({
+      executionPhase: 'HOST_EXECUTION_SUPPORTED',
+      supportedVenues: ['SOLANA'],
+    });
+    expect(root.runMemecoinMomentumGuardSimulationMatrix()).toHaveLength(15);
+  });
+
   it('publishes a serializable strategy catalog without execution capabilities', () => {
     expect(root.VIRAE_STRATEGY_CORE_CATALOG).toEqual([
       expect.objectContaining({
@@ -193,6 +214,12 @@ describe('public API contract', () => {
         autoTradeStrategyKeys: ['btc15m-value-snipe'],
         manifest: root.BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST,
       }),
+      expect.objectContaining({
+        key: 'memecoin-momentum-guard',
+        module: 'memecoin-momentum-guard',
+        autoTradeStrategyKeys: ['memecoin-momentum-guard'],
+        manifest: root.MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST,
+      }),
     ]);
     for (const strategy of root.VIRAE_STRATEGY_CORE_CATALOG) {
       expect(strategy.capabilities).toMatchObject({
@@ -204,6 +231,7 @@ describe('public API contract', () => {
     }
     expect(root.VIRAE_STRATEGY_CORE_CATALOG.find(({ key }) => key === 'hit-price-snipe')?.capabilities.orderIntents).toBe(true);
     expect(root.VIRAE_STRATEGY_CORE_CATALOG.find(({ key }) => key === 'btc15m-value-snipe')?.capabilities.orderIntents).toBe(false);
+    expect(root.VIRAE_STRATEGY_CORE_CATALOG.find(({ key }) => key === 'memecoin-momentum-guard')?.capabilities.orderIntents).toBe(false);
     expect(JSON.parse(JSON.stringify(root.VIRAE_STRATEGY_CORE_CATALOG)))
       .toEqual(root.VIRAE_STRATEGY_CORE_CATALOG);
   });

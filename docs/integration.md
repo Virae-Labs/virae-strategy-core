@@ -45,6 +45,8 @@ For Hit Price Snipe, parse the official resolution text into a canonical `priceS
 
 For BTC 15m Value Snipe, normalize the venue and its official settlement-price model, then calculate `estimatedAllInCost` from the executable quote, current fee schedule, host fee, and expected slippage. Never copy one venue's economics into the other. Replay both venue matrices through the host adapter before enabling paper or live execution.
 
+For Memecoin Momentum Guard, persist the discovery universe and normalized observation before evaluation so delisted and failed-route candidates remain visible in replay. Supply a current executable quote including impact, order-to-pool ratio, quote-time liquidity, expiry, and sellability. After an `ELIGIBLE` decision, create a durable task-scoped claim before any external execution, then recheck task state, daily risk, token cooldown, balance, and quote freshness. Attribute the resulting swap intent to the decision and let independent chain reconciliation determine its final state. Exit evaluation must use executable sell proceeds rather than a display price.
+
 ## Minimal host adapter
 
 ```ts

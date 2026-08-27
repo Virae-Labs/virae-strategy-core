@@ -5,7 +5,7 @@
 [![Node.js](https://img.shields.io/node/v/%40viraeai%2Fvirae-strategy-core)](https://www.npmjs.com/package/@viraeai/virae-strategy-core)
 [![license](https://img.shields.io/npm/l/%40viraeai%2Fvirae-strategy-core)](./LICENSE)
 
-Deterministic, side-effect-free prediction-market strategy decisions, execution policies, and replay contracts.
+Deterministic, side-effect-free trading strategy decisions, execution policies, and replay contracts.
 
 ## Strategies at a glance
 
@@ -17,6 +17,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 | [Weather Temperature](./docs/strategy/weather-temperature.md) | Daily high/low temperature buckets | Ranked YES limit-order intents and per-bucket evaluations | GFS ensemble probabilities, station-local timing, Strict/Core/Wide profiles, TOP1 or adjacent TOP2 |
 | [Hit Price Snipe](./docs/strategy/hit-price-snipe.md) | Crypto hit-price markets | Confirm-hit/Pre-hit decision, FAK intent, fill/PnL simulation, system matrix | Exact crossing semantics, source/freshness/edge gates, explicit small-win/large-loss evidence |
 | [BTC 15m Value Snipe](./docs/strategy/btc15m-value-snipe.md) | Recurring BTC 15m on Polymarket and Predict.fun (simulation contract) | Venue-aware value decision and two system matrices | Shared fair-value policy with explicit host-supplied venue fees and slippage |
+| [Memecoin Momentum Guard](./docs/strategy/memecoin-momentum-guard.md) | Solana memecoin discovery universe | `WAIT` / `SKIP` / `ELIGIBLE` entry plus executable-proceeds exit decisions | Persistent momentum, security, quote, daily-risk, TP/SL/risk/time-stop gates |
 
 ### Why use this package
 
@@ -31,7 +32,7 @@ Deterministic, side-effect-free prediction-market strategy decisions, execution 
 ## Install
 
 ```bash
-npm install --save-exact @viraeai/virae-strategy-core@0.8.1
+npm install --save-exact @viraeai/virae-strategy-core@0.9.0
 ```
 
 Pin exact versions in money-moving systems. Review the [changelog](./CHANGELOG.md) and replay representative fixtures before every upgrade.
@@ -48,6 +49,7 @@ import { decideMuskTweetCountEntry } from '@viraeai/virae-strategy-core/musk-twe
 import { decideWeatherTemperatureEntry } from '@viraeai/virae-strategy-core/weather-temperature';
 import { runHitPriceSnipeSystemSimulationMatrix } from '@viraeai/virae-strategy-core/hit-price-snipe';
 import { runBtc15mValueSnipeSystemSimulationMatrix } from '@viraeai/virae-strategy-core/btc15m-value-snipe';
+import { decideMemecoinMomentumEntry } from '@viraeai/virae-strategy-core/memecoin-momentum-guard';
 
 for (const strategy of VIRAE_STRATEGY_CORE_CATALOG) {
   console.log(strategy.key, strategy.manifest.modelVersion, strategy.capabilities);
@@ -93,6 +95,7 @@ Calling this package never submits an order. A returned `ELIGIBLE`, generated in
 - **Weather Temperature:** the decision returns `ENTRY_INTENTS`, `NO_ELIGIBLE_BUCKET`, or `INVALID_INPUT`, plus an evaluation for every bucket and typed diagnostics.
 - **Hit Price Snipe:** `ELIGIBLE` means a normalized Confirm-hit or explicitly modeled Pre-hit passed the pure gates. The host must prove resolution-source equivalence before execution.
 - **BTC 15m Value Snipe:** `ELIGIBLE` means the shared recurring-market gates and venue-specific price-model/all-in-cost edge gate passed. The host remains responsible for exact fees, slippage, submission, and reconciliation.
+- **Memecoin Momentum Guard:** `ELIGIBLE` means a persistent multi-signal observation and a fresh executable quote passed security, activity, impact, pool-share, sellability, cooldown, exposure, and daily-risk gates. The host still owns token discovery, quote provenance, durable claims, signing, submission, reconciliation, and exit scheduling.
 
 See the [public API guide](./docs/api.md) for functions and types, and the [integration guide](./docs/integration.md) for the production host contract.
 
@@ -120,6 +123,7 @@ Before submission, a host must revalidate market state, data freshness, tick/pre
 - [Weather Temperature strategy design](./docs/strategy/weather-temperature.md)
 - [Hit Price Snipe contract](./docs/strategy/hit-price-snipe.md)
 - [BTC 15m Value Snipe contract](./docs/strategy/btc15m-value-snipe.md)
+- [Memecoin Momentum Guard contract](./docs/strategy/memecoin-momentum-guard.md)
 - [Public API guide](./docs/api.md)
 - [Integration and safety boundary](./docs/integration.md)
 - [Testing and replay](./docs/testing.md)

@@ -109,5 +109,30 @@ export function evaluate(operation, input) {
       results,
     };
   }
+  if (operation === 'memecoin-momentum-entry') {
+    return {
+      operation,
+      manifest: core.MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST,
+      result: core.decideMemecoinMomentumEntry(input),
+    };
+  }
+  if (operation === 'memecoin-momentum-exit') {
+    return {
+      operation,
+      manifest: core.MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST,
+      result: core.decideMemecoinMomentumExit(input),
+    };
+  }
+  if (operation === 'memecoin-momentum-system-matrix') {
+    const matrix = Array.isArray(input?.matrix)
+      ? input.matrix
+      : core.buildMemecoinMomentumGuardSimulationMatrix();
+    return {
+      operation,
+      manifest: core.MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST,
+      count: matrix.length,
+      results: core.runMemecoinMomentumGuardSimulationMatrix(matrix),
+    };
+  }
   throw new Error(`Unsupported operation: ${operation ?? '(missing)'}`);
 }

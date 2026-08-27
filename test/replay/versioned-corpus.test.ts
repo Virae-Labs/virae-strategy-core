@@ -4,6 +4,7 @@ import { CRYPTO_TAIL_STRATEGY_MANIFEST, decideCryptoTailEntry } from '../../src/
 import type { CryptoTailDecisionInput, CryptoTailDecisionResult } from '../../src/crypto-tail';
 import { runHitPriceSnipeSystemSimulationMatrix } from '../../src/hit-price-snipe';
 import { runBtc15mValueSnipeSystemSimulationMatrix } from '../../src/btc15m-value-snipe';
+import { runMemecoinMomentumGuardSimulationMatrix } from '../../src/memecoin-momentum-guard';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -61,5 +62,18 @@ describe('versioned replay corpus', () => {
       .toEqual(corpus.matrices['hit-price-snipe']);
     expect(compact(runBtc15mValueSnipeSystemSimulationMatrix()))
       .toEqual(corpus.matrices['btc15m-value-snipe']);
+  });
+
+  it('keeps the Memecoin Momentum Guard 0.9.0 matrix decisions stable', () => {
+    const corpus = JSON.parse(readFileSync(
+      resolve(__dirname, '../../fixtures/replay/memecoin-momentum-guard-v0.9.0.json'),
+      'utf8',
+    )) as { packageVersion: string; matrix: Array<[string, string, string]> };
+    expect(corpus.packageVersion).toBe('0.9.0');
+    expect(runMemecoinMomentumGuardSimulationMatrix().map((row) => [
+      row.scenarioId,
+      row.decision.decision,
+      row.decision.reasonCode,
+    ])).toEqual(corpus.matrix);
   });
 });

@@ -12,6 +12,7 @@ import * as muskTweetCount from '@viraeai/virae-strategy-core/musk-tweet-count';
 import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temperature';
 import * as hitPriceSnipe from '@viraeai/virae-strategy-core/hit-price-snipe';
 import * as btc15mValueSnipe from '@viraeai/virae-strategy-core/btc15m-value-snipe';
+import * as memecoinMomentumGuard from '@viraeai/virae-strategy-core/memecoin-momentum-guard';
 ```
 
 | Module | Primary decision/plan API | Manifest |
@@ -101,6 +102,15 @@ See [Hit Price Snipe contract](./strategy/hit-price-snipe.md).
 - `DEFAULT_BTC15M_VALUE_SNIPE_CONFIG`, `BTC15M_VALUE_SNIPE_VENUES`, and `BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST` are public reference exports.
 
 The host must calculate and pass `estimatedAllInCost`; Strategy Core does not guess venue fees or slippage. See [BTC 15m Value Snipe contract](./strategy/btc15m-value-snipe.md).
+
+## Memecoin Momentum Guard
+
+- `decideMemecoinMomentumEntry(input)` evaluates one normalized Solana observation, host risk state, and executable quote.
+- `decideMemecoinMomentumExit(input)` evaluates executable sell proceeds against TP, SL, risk-stop, and maximum-hold rules.
+- `buildMemecoinMomentumGuardSimulationMatrix()` and `runMemecoinMomentumGuardSimulationMatrix()` expose the deterministic 15-row replay contract.
+- `DEFAULT_MEMECOIN_MOMENTUM_GUARD_CONFIG` is the versioned experimental host profile.
+
+The package does not discover tokens or construct/submit Jupiter swaps. See [Memecoin Momentum Guard](./strategy/memecoin-momentum-guard.md).
 
 ## Common integration rules
 

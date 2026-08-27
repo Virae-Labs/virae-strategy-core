@@ -10,6 +10,7 @@ Treat `VIRAE_STRATEGY_CORE_CATALOG` as the machine-readable source of truth. Run
 | `weather-temperature` | `@viraeai/virae-strategy-core/weather-temperature` | `weather-temperature` | Per-bucket evaluation, TOP1/adjacent TOP2 intents, replay |
 | `hit-price-snipe` | `@viraeai/virae-strategy-core/hit-price-snipe` | `hit-price-snipe` | Confirm-hit/Pre-hit decision, FAK fill/PnL simulation, system matrix replay |
 | `btc15m-value-snipe` | `@viraeai/virae-strategy-core/btc15m-value-snipe` | `btc15m-value-snipe` | Venue-aware recurring BTC 15m decision and Polymarket/Predict.fun matrix replay |
+| `memecoin-momentum-guard` | `@viraeai/virae-strategy-core/memecoin-momentum-guard` | `memecoin-momentum-guard` | Solana momentum entry, executable-proceeds exit, and system matrix replay |
 
 The catalog intentionally omits its own package version. Read `package.json` from the installed artifact so the reported package version cannot drift from the code being executed. Strategy manifests carry model, input-schema, and execution-policy versions.
 

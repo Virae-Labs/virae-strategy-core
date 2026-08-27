@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.9.0 - 2026-08-27
+
+- Add the deterministic Solana Memecoin Momentum Guard strategy with persistent momentum, activity, security, risk-budget, and executable-quote entry gates.
+- Add executable-proceeds-based take-profit, stop-loss, risk-stop, and maximum-hold exit decisions.
+- Add a 15-row entry/quote/risk/exit replay matrix, public package subpath, catalog metadata, integration guidance, and clean-consumer packaging coverage.
+
 ## 0.8.1 - 2026-08-26
 
 - Treat decimal spread values within a sub-tick floating-point epsilon as equal to Crypto Tail spread limits, keeping decision results and gate diagnostics consistent at exact price-tick boundaries.
