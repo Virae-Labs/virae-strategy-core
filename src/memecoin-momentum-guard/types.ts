@@ -31,6 +31,13 @@ export type MemecoinMomentumGuardConfig = {
   maxHoldSec: number;
 };
 
+export type MemecoinMomentumGuardProfile = {
+  key: 'conservative' | 'balanced' | 'aggressive';
+  label: string;
+  description: string;
+  config: Readonly<MemecoinMomentumGuardConfig>;
+};
+
 export type MemecoinMomentumObservation = {
   observationId: string;
   capturedAtSec: number;

@@ -3,12 +3,22 @@ import {
   decideMemecoinMomentumEntry,
   decideMemecoinMomentumExit,
   runMemecoinMomentumGuardSimulationMatrix,
+  MEMECOIN_MOMENTUM_GUARD_PROFILES,
+  getMemecoinMomentumGuardProfile,
 } from '..';
 
 test('passes every deterministic Momentum Guard simulation row', () => {
   const results = runMemecoinMomentumGuardSimulationMatrix();
   expect(results).toHaveLength(15);
   expect(results.filter((row) => !row.passed)).toEqual([]);
+});
+
+test('exports a stable three-profile forward simulation matrix', () => {
+  expect(MEMECOIN_MOMENTUM_GUARD_PROFILES.map((profile) => profile.key)).toEqual([
+    'conservative', 'balanced', 'aggressive',
+  ]);
+  expect(getMemecoinMomentumGuardProfile('balanced')?.config.perOrderNotionalUsd).toBe(20);
+  expect(getMemecoinMomentumGuardProfile('missing')).toBeNull();
 });
 
 test.each([

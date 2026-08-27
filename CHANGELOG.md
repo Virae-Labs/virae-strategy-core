@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.10.0 - 2026-08-27
+
+- Add a versioned Conservative, Balanced, and Aggressive parameter matrix for task-independent Memecoin Momentum Guard forward simulations.
+- Export profile lookup contracts without adding host I/O to the strategy package.
+
 ## 0.9.0 - 2026-08-27
 
 - Add the deterministic Solana Memecoin Momentum Guard strategy with persistent momentum, activity, security, risk-budget, and executable-quote entry gates.
