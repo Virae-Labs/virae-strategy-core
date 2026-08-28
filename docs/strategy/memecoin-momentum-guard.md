@@ -8,11 +8,12 @@ Memecoin Momentum Guard is a deterministic Solana strategy contract for a host-p
 
 The default profile requires:
 
-- a pair at least six hours old;
-- fresh observations with at least USD 50,000 liquidity, USD 25,000 trailing 24-hour volume, and 100 trailing transactions;
-- one-hour price momentum between 5% and 35%;
+- a pair at least four hours old;
+- fresh observations with at least USD 25,000 liquidity, USD 25,000 trailing 24-hour volume, and 100 trailing transactions;
+- one-hour price momentum between 3% and 35%;
 - a momentum-breakout signal plus volume-surge or buy-pressure confirmation;
-- at least two continuous signal observations, 2.5x hourly volume anomaly, and buy participation between 62% and 85%;
+- at least two continuous signal observations, 1.4x hourly volume anomaly, and buy participation between 50% and 90%;
+- known Top-10 holder concentration no higher than 40%;
 - known non-honeypot security evidence, active DEX state, and a host-confirmed buy route;
 - a fresh executable quote with verified sellability, no more than 3% impact, no more than 0.5% order-to-pool ratio, and at least 15 seconds of remaining validity;
 - task open-position, cooldown, daily notional, and realized-loss limits.

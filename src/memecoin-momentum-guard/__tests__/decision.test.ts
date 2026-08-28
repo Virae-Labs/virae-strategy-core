@@ -21,10 +21,45 @@ test('exports a stable three-profile forward simulation matrix', () => {
   expect(getMemecoinMomentumGuardProfile('missing')).toBeNull();
 });
 
+test('exports calibrated forward-simulation thresholds', () => {
+  expect(getMemecoinMomentumGuardProfile('conservative')?.config).toMatchObject({
+    minPairAgeSec: 6 * 60 * 60,
+    minLiquidityUsd: 50_000,
+    minPriceChange1hPct: 6,
+    maxPriceChange1hPct: 25,
+    minVolumeAnomaly: 1.8,
+    minBuySharePct: 55,
+    maxBuySharePct: 82,
+    maxTop10HolderPct: 35,
+  });
+  expect(getMemecoinMomentumGuardProfile('balanced')?.config).toMatchObject({
+    minPairAgeSec: 4 * 60 * 60,
+    minLiquidityUsd: 25_000,
+    minPriceChange1hPct: 3,
+    maxPriceChange1hPct: 35,
+    minVolumeAnomaly: 1.4,
+    minBuySharePct: 50,
+    maxBuySharePct: 90,
+    maxTop10HolderPct: 40,
+  });
+  expect(getMemecoinMomentumGuardProfile('aggressive')?.config).toMatchObject({
+    minPairAgeSec: 2 * 60 * 60,
+    minLiquidityUsd: 20_000,
+    minPriceChange1hPct: 3,
+    maxPriceChange1hPct: 50,
+    minVolumeAnomaly: 1.2,
+    minBuySharePct: 42,
+    maxBuySharePct: 92,
+    maxTop10HolderPct: 45,
+  });
+});
+
 test.each([
   ['STRATEGY_DISABLED', (input: any) => { input.risk.globallyEnabled = false; }],
   ['PAIR_TOO_NEW', (input: any) => { input.observation.pairCreatedAtSec = input.nowSec - 60; }],
   ['SECURITY_REJECTED', (input: any) => { input.observation.riskLevel = 'HIGH'; }],
+  ['HOLDER_CONCENTRATION_UNAVAILABLE', (input: any) => { input.observation.top10HolderPct = null; }],
+  ['HOLDER_CONCENTRATION_TOO_HIGH', (input: any) => { input.observation.top10HolderPct = 60; }],
   ['DEX_INACTIVE', (input: any) => { input.observation.dexStatus = 'stale'; }],
   ['BUY_ROUTE_UNAVAILABLE', (input: any) => { input.observation.buyEnabled = false; }],
   ['LIQUIDITY_TOO_LOW', (input: any) => { input.observation.liquidityUsd = 1_000; }],

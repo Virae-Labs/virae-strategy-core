@@ -17,6 +17,7 @@ export type MemecoinMomentumGuardConfig = {
   minVolumeAnomaly: number;
   minBuySharePct: number;
   maxBuySharePct: number;
+  maxTop10HolderPct: number;
   minSignalContinuityCount: number;
   maxQuoteAgeSec: number;
   minQuoteValidityRemainingSec: number;
@@ -57,6 +58,7 @@ export type MemecoinMomentumObservation = {
   buys1h: number;
   sells1h: number;
   liquidityUsd: number;
+  top10HolderPct: number | null;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
   dexStatus: 'active' | 'stale' | 'missing';
   honeypot: boolean | null;
@@ -101,6 +103,8 @@ export type MemecoinMomentumEntryReasonCode =
   | 'PAIR_TOO_NEW'
   | 'SECURITY_UNAVAILABLE'
   | 'SECURITY_REJECTED'
+  | 'HOLDER_CONCENTRATION_UNAVAILABLE'
+  | 'HOLDER_CONCENTRATION_TOO_HIGH'
   | 'DEX_INACTIVE'
   | 'BUY_ROUTE_UNAVAILABLE'
   | 'LIQUIDITY_TOO_LOW'

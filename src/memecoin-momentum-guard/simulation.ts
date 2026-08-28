@@ -18,7 +18,7 @@ function entryInput(): MemecoinMomentumEntryInput {
       tokenAddress: 'So11111111111111111111111111111111111111112', pairAddress: 'pair-1', symbol: 'MEME',
       pairCreatedAtSec: NOW - 86_400, priceUsd: 0.01, priceChange1hPct: 8, volume1hUsd: 10_000,
       volume24hUsd: 100_000, volumeAnomaly: 3, txns1h: 80, txns24h: 500, buys1h: 70, sells1h: 30,
-      liquidityUsd: 100_000, riskLevel: 'LOW', dexStatus: 'active', honeypot: false, buyEnabled: true,
+      liquidityUsd: 100_000, top10HolderPct: 25, riskLevel: 'LOW', dexStatus: 'active', honeypot: false, buyEnabled: true,
       signalTypes: ['momentum_breakout', 'volume_surge', 'buy_pressure'], signalContinuityCount: 2,
       signalLastSeenAtSec: NOW - 5,
     },
@@ -52,7 +52,7 @@ export function buildMemecoinMomentumGuardSimulationMatrix(): MemecoinMomentumSi
   return [
     entry('entry-ready', 'ENTRY', 'Persistent confirmed momentum with a safe executable quote passes.', () => {}, 'ELIGIBLE', 'ENTRY_READY'),
     entry('signal-not-persistent', 'ENTRY', 'A first observation waits.', (i) => { i.observation.signalContinuityCount = 1; }, 'WAIT', 'SIGNAL_NOT_PERSISTENT'),
-    entry('overheated', 'ENTRY', 'An overheated move is not chased.', (i) => { i.observation.priceChange1hPct = 50; }, 'SKIP', 'MOMENTUM_OVERHEATED'),
+    entry('overheated', 'ENTRY', 'An overheated move is not chased.', (i) => { i.observation.priceChange1hPct = 55; }, 'SKIP', 'MOMENTUM_OVERHEATED'),
     entry('security-unavailable', 'DATA_QUALITY', 'Unknown honeypot evidence fails closed.', (i) => { i.observation.honeypot = null; }, 'SKIP', 'SECURITY_UNAVAILABLE'),
     entry('observation-stale', 'DATA_QUALITY', 'A stale observation fails closed.', (i) => { i.observation.capturedAtSec = NOW - 60; }, 'SKIP', 'OBSERVATION_STALE'),
     entry('position-limit', 'RISK', 'Open-position limits block entry.', (i) => { i.risk.openPositionCount = 2; }, 'SKIP', 'POSITION_LIMIT_REACHED'),

@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.10.1 - 2026-08-28
+
+- Calibrate Conservative, Balanced, and Aggressive Memecoin Momentum Guard thresholds against the current Solana P2 candidate distribution.
+- Add fail-closed Top-10 holder concentration inputs and profile-specific concentration limits.
+
 ## 0.10.0 - 2026-08-27
 
 - Add a versioned Conservative, Balanced, and Aggressive parameter matrix for task-independent Memecoin Momentum Guard forward simulations.
