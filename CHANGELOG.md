@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.11.0 - 2026-08-28
+
+- Add Memecoin Launch Scout with new-pool age, five-minute participation, holder-risk, daily-risk, and executable round-trip quote gates.
+- Add immediate take profit, profit-after-minimum-hold, stop loss, risk stop, and hard time-stop exit decisions based on executable net proceeds.
+- Add Conservative, Balanced, and Aggressive profiles plus a 21-row deterministic system simulation matrix.
+
 ## 0.10.2 - 2026-08-28
 
 - Republish the 0.10.1 Memecoin Momentum Guard calibration from an aligned Git release commit and tag; strategy behavior is unchanged.

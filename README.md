@@ -18,6 +18,7 @@ Deterministic, side-effect-free trading strategy decisions, execution policies, 
 | [Hit Price Snipe](./docs/strategy/hit-price-snipe.md) | Crypto hit-price markets | Confirm-hit/Pre-hit decision, FAK intent, fill/PnL simulation, system matrix | Exact crossing semantics, source/freshness/edge gates, explicit small-win/large-loss evidence |
 | [BTC 15m Value Snipe](./docs/strategy/btc15m-value-snipe.md) | Recurring BTC 15m on Polymarket and Predict.fun (simulation contract) | Venue-aware value decision and two system matrices | Shared fair-value policy with explicit host-supplied venue fees and slippage |
 | [Memecoin Momentum Guard](./docs/strategy/memecoin-momentum-guard.md) | Solana memecoin discovery universe | `WAIT` / `SKIP` / `ELIGIBLE` entry plus executable-proceeds exit decisions | Persistent momentum, security, quote, daily-risk, TP/SL/risk/time-stop gates |
+| [Memecoin Launch Scout](./docs/strategy/memecoin-launch-scout.md) | Newly launched Solana pools | Small time-boxed entries plus executable-proceeds exits | New-pool age, 5m participation, holder/security, sellability, profit-after-hold and hard deadline gates |
 
 ### Why use this package
 

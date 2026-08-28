@@ -5,6 +5,7 @@ import { WEATHER_TEMPERATURE_STRATEGY_MANIFEST } from './weather-temperature';
 import { HIT_PRICE_SNIPE_STRATEGY_MANIFEST } from './hit-price-snipe';
 import { BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST } from './btc15m-value-snipe';
 import { MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST } from './memecoin-momentum-guard';
+import { MEMECOIN_LAUNCH_SCOUT_STRATEGY_MANIFEST } from './memecoin-launch-scout';
 
 export type ViraeStrategyCoreKey =
   | 'crypto-tail'
@@ -13,7 +14,8 @@ export type ViraeStrategyCoreKey =
   | 'weather-temperature'
   | 'hit-price-snipe'
   | 'btc15m-value-snipe'
-  | 'memecoin-momentum-guard';
+  | 'memecoin-momentum-guard'
+  | 'memecoin-launch-scout';
 
 export type ViraeStrategyCoreCatalogEntry = {
   key: ViraeStrategyCoreKey;
@@ -34,7 +36,8 @@ export type ViraeStrategyCoreCatalogEntry = {
     | typeof WEATHER_TEMPERATURE_STRATEGY_MANIFEST
     | typeof HIT_PRICE_SNIPE_STRATEGY_MANIFEST
     | typeof BTC15M_VALUE_SNIPE_STRATEGY_MANIFEST
-    | typeof MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST;
+    | typeof MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST
+    | typeof MEMECOIN_LAUNCH_SCOUT_STRATEGY_MANIFEST;
 };
 
 /**
@@ -140,5 +143,13 @@ export const VIRAE_STRATEGY_CORE_CATALOG = [
       orderSubmission: false,
     },
     manifest: MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST,
+  },
+  {
+    key: 'memecoin-launch-scout',
+    packageName: '@viraeai/virae-strategy-core',
+    module: 'memecoin-launch-scout',
+    autoTradeStrategyKeys: ['memecoin-launch-scout'],
+    capabilities: { decision: true, orderIntents: false, replay: true, networkAccess: false, orderSubmission: false },
+    manifest: MEMECOIN_LAUNCH_SCOUT_STRATEGY_MANIFEST,
   },
 ] as const satisfies readonly ViraeStrategyCoreCatalogEntry[];

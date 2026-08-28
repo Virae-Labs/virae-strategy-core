@@ -62,6 +62,8 @@ try {
     'dist/btc15m-value-snipe/index.d.ts',
     'dist/memecoin-momentum-guard/index.js',
     'dist/memecoin-momentum-guard/index.d.ts',
+    'dist/memecoin-launch-scout/index.js',
+    'dist/memecoin-launch-scout/index.d.ts',
     'docs/strategy/musk-tweet-count.md',
     'docs/strategy/crypto-tail.md',
     'docs/strategy/pre-market.md',
@@ -69,6 +71,7 @@ try {
     'docs/strategy/hit-price-snipe.md',
     'docs/strategy/btc15m-value-snipe.md',
     'docs/strategy/memecoin-momentum-guard.md',
+    'docs/strategy/memecoin-launch-scout.md',
     'docs/integration.md',
     'examples/decision-and-plan.cjs',
     'fixtures/replay/crypto-tail-safety-v0.7.0.json',
@@ -116,6 +119,7 @@ const weatherTemperature = require('@viraeai/virae-strategy-core/weather-tempera
 const hitPriceSnipe = require('@viraeai/virae-strategy-core/hit-price-snipe');
 const btc15mValueSnipe = require('@viraeai/virae-strategy-core/btc15m-value-snipe');
 const memecoinMomentumGuard = require('@viraeai/virae-strategy-core/memecoin-momentum-guard');
+const memecoinLaunchScout = require('@viraeai/virae-strategy-core/memecoin-launch-scout');
 const metadata = require('@viraeai/virae-strategy-core/package.json');
 assert.equal(metadata.name, '@viraeai/virae-strategy-core');
 assert.equal(metadata.version, '${projectMetadata.version}');
@@ -135,6 +139,9 @@ assert.equal(btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix().every(
 assert.equal(root.decideMemecoinMomentumEntry, memecoinMomentumGuard.decideMemecoinMomentumEntry);
 assert.equal(memecoinMomentumGuard.runMemecoinMomentumGuardSimulationMatrix().length, 15);
 assert.equal(memecoinMomentumGuard.runMemecoinMomentumGuardSimulationMatrix().every((row) => row.passed), true);
+assert.equal(root.decideMemecoinLaunchEntry, memecoinLaunchScout.decideMemecoinLaunchEntry);
+assert.equal(memecoinLaunchScout.runMemecoinLaunchScoutSystemSimulationMatrix().length, 21);
+assert.equal(memecoinLaunchScout.runMemecoinLaunchScoutSystemSimulationMatrix().every((row) => row.passed), true);
 const nowSec = 2000000000;
 const nowIso = new Date(nowSec * 1000).toISOString();
 const muskMarket = {
@@ -157,7 +164,7 @@ const muskDecision = muskTweetCount.decideMuskTweetCountEntry({
 });
 assert.equal(muskDecision.reasonCode, 'CURRENT_MARKET_INTENT');
 assert.equal(muskDecision.selectedIntent.amount, 187.5);
-assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature', 'hit-price-snipe', 'btc15m-value-snipe', 'memecoin-momentum-guard']);
+assert.deepEqual(root.VIRAE_STRATEGY_CORE_CATALOG.map(({ key }) => key), ['crypto-tail', 'pre-market', 'musk-tweet-count', 'weather-temperature', 'hit-price-snipe', 'btc15m-value-snipe', 'memecoin-momentum-guard', 'memecoin-launch-scout']);
 assert.throws(() => require('@viraeai/virae-strategy-core/ev-snipe'), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
 `);
   run(process.execPath, ['consumer.cjs'], consumerRoot);
@@ -172,6 +179,7 @@ import * as weatherTemperature from '@viraeai/virae-strategy-core/weather-temper
 import * as hitPriceSnipe from '@viraeai/virae-strategy-core/hit-price-snipe';
 import * as btc15mValueSnipe from '@viraeai/virae-strategy-core/btc15m-value-snipe';
 import * as memecoinMomentumGuard from '@viraeai/virae-strategy-core/memecoin-momentum-guard';
+import * as memecoinLaunchScout from '@viraeai/virae-strategy-core/memecoin-launch-scout';
 assert.equal(typeof root.decideCryptoTailEntry, 'function');
 assert.equal(typeof subpath.buildCryptoTailEntryExecutionPlan, 'function');
 assert.equal(typeof preMarket.buildPreMarketEntryPlan, 'function');
@@ -180,6 +188,7 @@ assert.equal(typeof weatherTemperature.decideWeatherTemperatureEntry, 'function'
 assert.equal(typeof hitPriceSnipe.runHitPriceSnipeSystemSimulationMatrix, 'function');
 assert.equal(typeof btc15mValueSnipe.runBtc15mValueSnipeSystemSimulationMatrix, 'function');
 assert.equal(typeof memecoinMomentumGuard.decideMemecoinMomentumEntry, 'function');
+assert.equal(typeof memecoinLaunchScout.decideMemecoinLaunchEntry, 'function');
 `);
   run(process.execPath, ['consumer.mjs'], consumerRoot);
 
@@ -224,6 +233,9 @@ assert.equal(valueOutput.results.every((row) => row.passed), true);
 const memecoinOutput = evaluate('memecoin-momentum-system-matrix', {});
 assert.equal(memecoinOutput.count, 15);
 assert.equal(memecoinOutput.results.every((row) => row.passed), true);
+const launchScoutOutput = evaluate('memecoin-launch-scout-system-matrix', {});
+assert.equal(launchScoutOutput.count, 21);
+assert.equal(launchScoutOutput.results.every((row) => row.passed), true);
 `);
   run(process.execPath, ['skill-consumer.mjs'], consumerRoot);
 
@@ -301,6 +313,7 @@ if (memecoinInput) decideMemecoinMomentumEntry(memecoinInput);
     'index.d.ts.map',
     'index.js',
     'index.js.map',
+    'memecoin-launch-scout',
     'memecoin-momentum-guard',
     'musk-tweet-count',
     'pre-market',

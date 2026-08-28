@@ -5,4 +5,5 @@ export * from './weather-temperature';
 export * from './hit-price-snipe';
 export * from './btc15m-value-snipe';
 export * from './memecoin-momentum-guard';
+export * from './memecoin-launch-scout';
 export * from './catalog';

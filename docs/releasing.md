@@ -46,7 +46,7 @@ npm view @viraeai/virae-strategy-core@X.Y.Z name version dist.integrity
 npm install --save-exact @viraeai/virae-strategy-core@X.Y.Z
 ```
 
-Load root, `/crypto-tail`, `/pre-market`, `/musk-tweet-count`, `/weather-temperature`, `/hit-price-snipe`, and `/btc15m-value-snipe` entry points; execute installed-package Musk, Weather, Hit Price Snipe, and both BTC 15m Value Snipe matrix fixtures through the bundled Skill; and compile a downstream TypeScript file. Confirm the registry integrity matches the committed lockfile used by the first production consumer.
+Load every public entry point, including `/memecoin-momentum-guard` and `/memecoin-launch-scout`; execute each bundled system matrix through the installed package and Skill; and compile a downstream TypeScript file. Confirm the registry integrity matches the committed lockfile used by the first production consumer.
 
 Do not publish another version merely to work around registry propagation until npm confirms whether the first publish exists. A tarball, dist-tag, metadata document, and anonymous clean install should agree.
 
