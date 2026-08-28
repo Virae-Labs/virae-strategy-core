@@ -1,6 +1,6 @@
 {
   "name": "@viraeai/virae-strategy-core",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Deterministic, side-effect-free trading strategy decisions, execution policies, and replay contracts.",
   "keywords": [
     "prediction-markets",

@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.10.2 - 2026-08-28
+
+- Republish the 0.10.1 Memecoin Momentum Guard calibration from an aligned Git release commit and tag; strategy behavior is unchanged.
+
 ## 0.10.1 - 2026-08-28
 
 - Calibrate Conservative, Balanced, and Aggressive Memecoin Momentum Guard thresholds against the current Solana P2 candidate distribution.
