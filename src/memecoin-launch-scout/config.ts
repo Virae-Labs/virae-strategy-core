@@ -15,17 +15,25 @@ export const DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG: Readonly<MemecoinLaunchScoutC
 
 export const MEMECOIN_LAUNCH_SCOUT_PROFILES: readonly MemecoinLaunchScoutProfile[] = [
   { key: 'conservative', label: 'Conservative', description: 'Waits longer for deeper liquidity and stronger early participation.', config: {
-    ...DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG, minPairAgeSec: 120, maxPairAgeSec: 12 * 60,
-    minLiquidityUsd: 40_000, minVolume5mUsd: 10_000, minTxns5m: 50, minBuys5m: 35,
-    minBuySharePct: 65, maxPriceChange5mPct: 55, maxTop10HolderPct: 35, maxDevHolderPct: 10,
+    ...DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG, minPairAgeSec: 120, maxPairAgeSec: 30 * 60,
+    minLiquidityUsd: 32_000, minVolume5mUsd: 8_000, minTxns5m: 40, minBuys5m: 28,
+    minBuySharePct: 62, maxPriceChange5mPct: 55, maxTop10HolderPct: 35, maxDevHolderPct: 10,
     perOrderNotionalUsd: 8, maxOpenPositions: 2, maxDailyNotionalUsd: 32,
     takeProfitPct: 10, minHoldSec: 4 * 60, stopLossPct: 7, maxHoldSec: 7 * 60,
   } },
-  { key: 'balanced', label: 'Balanced', description: 'Small launch entries with executable safety checks and an eight-minute hard exit.', config: DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG },
+  { key: 'balanced', label: 'Balanced', description: 'A wider forward-simulation launch window with executable safety checks and an eight-minute hard exit.', config: {
+    ...DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG,
+    maxPairAgeSec: 45 * 60,
+    minLiquidityUsd: 16_000,
+    minVolume5mUsd: 4_000,
+    minTxns5m: 24,
+    minBuys5m: 16,
+    minBuySharePct: 58,
+  } },
   { key: 'aggressive', label: 'Aggressive', description: 'Enters younger, thinner launches with a wider payoff and loss envelope.', config: {
-    ...DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG, minPairAgeSec: 30, maxPairAgeSec: 20 * 60,
-    minLiquidityUsd: 12_000, minVolume5mUsd: 2_500, minTxns5m: 18, minBuys5m: 12,
-    minBuySharePct: 55, maxPriceChange5mPct: 120, maxTop10HolderPct: 50, maxDevHolderPct: 20,
+    ...DEFAULT_MEMECOIN_LAUNCH_SCOUT_CONFIG, minPairAgeSec: 30, maxPairAgeSec: 60 * 60,
+    minLiquidityUsd: 10_000, minVolume5mUsd: 2_000, minTxns5m: 14, minBuys5m: 10,
+    minBuySharePct: 52, maxPriceChange5mPct: 120, maxTop10HolderPct: 50, maxDevHolderPct: 20,
     maxPriceImpactPct: 4, maxOrderPoolRatioPct: 0.4, perOrderNotionalUsd: 12,
     maxOpenPositions: 4, maxDailyNotionalUsd: 72, takeProfitPct: 18,
     minHoldSec: 2 * 60, minProfitAfterHoldPct: 1, stopLossPct: 10, maxHoldSec: 10 * 60,

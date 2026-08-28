@@ -3,7 +3,7 @@ export type MemecoinLaunchScoutVenue = typeof MEMECOIN_LAUNCH_SCOUT_VENUES[numbe
 
 export const MEMECOIN_LAUNCH_SCOUT_STRATEGY_MANIFEST = {
   id: 'memecoin-launch-scout',
-  modelVersion: 'launch-scout-v1',
+  modelVersion: 'launch-scout-v2',
   inputSchemaVersion: 1,
   executionPolicyVersion: 1,
   executionPhase: 'HOST_EXECUTION_SUPPORTED',

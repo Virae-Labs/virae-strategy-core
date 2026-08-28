@@ -23,32 +23,32 @@ test('exports a stable three-profile forward simulation matrix', () => {
 
 test('exports calibrated forward-simulation thresholds', () => {
   expect(getMemecoinMomentumGuardProfile('conservative')?.config).toMatchObject({
-    minPairAgeSec: 6 * 60 * 60,
-    minLiquidityUsd: 50_000,
-    minPriceChange1hPct: 6,
+    minPairAgeSec: 3 * 60 * 60,
+    minLiquidityUsd: 40_000,
+    minPriceChange1hPct: 5,
     maxPriceChange1hPct: 25,
-    minVolumeAnomaly: 1.8,
-    minBuySharePct: 55,
+    minVolumeAnomaly: 1.6,
+    minBuySharePct: 52,
     maxBuySharePct: 82,
     maxTop10HolderPct: 35,
   });
   expect(getMemecoinMomentumGuardProfile('balanced')?.config).toMatchObject({
-    minPairAgeSec: 4 * 60 * 60,
-    minLiquidityUsd: 25_000,
+    minPairAgeSec: 2 * 60 * 60,
+    minLiquidityUsd: 20_000,
     minPriceChange1hPct: 3,
     maxPriceChange1hPct: 35,
-    minVolumeAnomaly: 1.4,
-    minBuySharePct: 50,
+    minVolumeAnomaly: 1.25,
+    minBuySharePct: 48,
     maxBuySharePct: 90,
     maxTop10HolderPct: 40,
   });
   expect(getMemecoinMomentumGuardProfile('aggressive')?.config).toMatchObject({
-    minPairAgeSec: 2 * 60 * 60,
-    minLiquidityUsd: 20_000,
+    minPairAgeSec: 60 * 60,
+    minLiquidityUsd: 15_000,
     minPriceChange1hPct: 3,
     maxPriceChange1hPct: 50,
-    minVolumeAnomaly: 1.2,
-    minBuySharePct: 42,
+    minVolumeAnomaly: 1.1,
+    minBuySharePct: 40,
     maxBuySharePct: 92,
     maxTop10HolderPct: 45,
   });

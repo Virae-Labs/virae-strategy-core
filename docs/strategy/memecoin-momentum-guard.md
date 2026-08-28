@@ -2,6 +2,8 @@
 
 Hosts can use `MEMECOIN_MOMENTUM_GUARD_PROFILES` for comparable forward simulations. The exported matrix contains `conservative`, `balanced`, and `aggressive` profiles; each is a complete immutable configuration evaluated by the same entry and exit functions as the default strategy.
 
+The forward-simulation pair-age floors are three, two, and one hour respectively. Their activity and liquidity floors are intentionally broader than the live default so the host can collect comparative forward evidence; all holder concentration, honeypot, quote freshness, sellability, impact, exposure, and daily-loss gates remain fail-closed.
+
 Memecoin Momentum Guard is a deterministic Solana strategy contract for a host-provided dynamic token universe. It does not discover tokens or call a quote provider. It evaluates one normalized observation and one executable quote at a caller-provided time.
 
 ## Entry contract

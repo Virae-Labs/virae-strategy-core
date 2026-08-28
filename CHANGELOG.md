@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.12.0 - 2026-08-28
+
+- Broaden Momentum Guard forward-simulation pair-age, liquidity, volume, transaction, anomaly, and buy-share ranges without changing the live default or fail-closed safety gates.
+- Extend Launch Scout forward-simulation windows to 30, 45, and 60 minutes and lower participation floors without changing the live default or holder, honeypot, quote, sellability, impact, exposure, or daily-loss gates.
+- Bump both memecoin strategy model versions so hosts can distinguish newly collected forward evidence from the previous profile calibration.
+
 ## 0.11.0 - 2026-08-28
 
 - Add Memecoin Launch Scout with new-pool age, five-minute participation, holder-risk, daily-risk, and executable round-trip quote gates.

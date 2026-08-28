@@ -11,6 +11,30 @@ test('exports three stable profiles', () => {
   expect(getMemecoinLaunchScoutProfile('missing')).toBeNull();
 });
 
+test('exports calibrated launch windows and participation floors', () => {
+  expect(getMemecoinLaunchScoutProfile('conservative')?.config).toMatchObject({
+    minPairAgeSec: 2 * 60,
+    maxPairAgeSec: 30 * 60,
+    minLiquidityUsd: 32_000,
+    minVolume5mUsd: 8_000,
+    minTxns5m: 40,
+  });
+  expect(getMemecoinLaunchScoutProfile('balanced')?.config).toMatchObject({
+    minPairAgeSec: 60,
+    maxPairAgeSec: 45 * 60,
+    minLiquidityUsd: 16_000,
+    minVolume5mUsd: 4_000,
+    minTxns5m: 24,
+  });
+  expect(getMemecoinLaunchScoutProfile('aggressive')?.config).toMatchObject({
+    minPairAgeSec: 30,
+    maxPairAgeSec: 60 * 60,
+    minLiquidityUsd: 10_000,
+    minVolume5mUsd: 2_000,
+    minTxns5m: 14,
+  });
+});
+
 test.each([
   ['HOLDER_CONCENTRATION_TOO_HIGH', (i: any) => { i.observation.top10HolderPct = 70; }],
   ['DEV_HOLDING_TOO_HIGH', (i: any) => { i.observation.devHolderPct = 30; }],

@@ -15,3 +15,5 @@ Missing honeypot, Top-10 holder, developer-holder, or quote evidence fails close
 ## Profiles and system matrix
 
 `MEMECOIN_LAUNCH_SCOUT_PROFILES` exports Conservative, Balanced, and Aggressive forward-simulation configurations. `buildMemecoinLaunchScoutSystemSimulationMatrix()` returns 21 deterministic entry, data-quality, risk, quote, and exit scenarios. Hosts should replay the exact installed matrix through their normalization adapter and persist the package/model version with results before enabling live execution.
+
+The forward-simulation launch windows are 2–30 minutes, 1–45 minutes, and 30 seconds–60 minutes respectively. Participation and liquidity floors are broadened for evidence collection, while holder concentration, developer holdings, honeypot status, quote freshness, sellability, impact, exposure, and daily-loss checks remain unchanged and fail closed.
