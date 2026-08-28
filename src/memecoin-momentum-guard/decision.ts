@@ -108,20 +108,15 @@ export function decideMemecoinMomentumEntry(
   if (input.nowSec - observation.pairCreatedAtSec < input.config.minPairAgeSec) {
     return entryResult(input, 'SKIP', 'PAIR_TOO_NEW', 'The token pair has not reached the configured minimum age.');
   }
-  if (observation.riskLevel === 'UNKNOWN' || observation.honeypot == null) {
-    return entryResult(input, 'SKIP', 'SECURITY_UNAVAILABLE', 'Required token security evidence is unavailable.');
-  }
-  if (observation.riskLevel === 'HIGH' || observation.honeypot
+  if (observation.riskLevel === 'HIGH' || observation.honeypot === true
     || hasSignal(observation.signalTypes, 'risk_warning')) {
     return entryResult(input, 'SKIP', 'SECURITY_REJECTED', 'Token security or risk checks rejected entry.');
   }
-  if (observation.top10HolderPct == null) {
-    return entryResult(input, 'SKIP', 'HOLDER_CONCENTRATION_UNAVAILABLE', 'Top-10 holder concentration is unavailable.');
-  }
-  if (!finite(observation.top10HolderPct) || observation.top10HolderPct < 0 || observation.top10HolderPct > 100) {
+  if (observation.top10HolderPct != null
+    && (!finite(observation.top10HolderPct) || observation.top10HolderPct < 0 || observation.top10HolderPct > 100)) {
     return entryResult(input, 'SKIP', 'INVALID_INPUT', 'Top-10 holder concentration must be a percentage from 0 to 100.');
   }
-  if (observation.top10HolderPct > input.config.maxTop10HolderPct) {
+  if (observation.top10HolderPct != null && observation.top10HolderPct > input.config.maxTop10HolderPct) {
     return entryResult(input, 'SKIP', 'HOLDER_CONCENTRATION_TOO_HIGH', 'Top-10 holder concentration exceeds the configured limit.');
   }
   if (observation.dexStatus !== 'active') return entryResult(input, 'SKIP', 'DEX_INACTIVE', 'Indexed DEX activity is not active.');

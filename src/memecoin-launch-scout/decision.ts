@@ -33,12 +33,11 @@ export function decideMemecoinLaunchEntry(input: MemecoinLaunchEntryInput): Meme
   const age = input.nowSec - o.pairCreatedAtSec;
   if (age < input.config.minPairAgeSec) return entryResult(input, 'WAIT', 'PAIR_TOO_NEW', 'The pool is still inside the initial discovery delay.');
   if (age > input.config.maxPairAgeSec) return entryResult(input, 'SKIP', 'PAIR_TOO_OLD', 'The pool is outside the configured launch window.');
-  if (o.riskLevel === 'UNKNOWN' || o.honeypot == null) return entryResult(input, 'SKIP', 'SECURITY_UNAVAILABLE', 'Required token security evidence is unavailable.');
-  if (o.riskLevel === 'HIGH' || o.honeypot) return entryResult(input, 'SKIP', 'SECURITY_REJECTED', 'Token security checks rejected entry.');
-  if (o.top10HolderPct == null || o.devHolderPct == null) return entryResult(input, 'SKIP', 'HOLDER_DATA_UNAVAILABLE', 'Top-holder and developer-holder evidence is required.');
-  if (![o.top10HolderPct, o.devHolderPct].every(finite) || o.top10HolderPct < 0 || o.top10HolderPct > 100 || o.devHolderPct < 0 || o.devHolderPct > 100) return entryResult(input, 'SKIP', 'INVALID_INPUT', 'Holder percentages must be between 0 and 100.');
-  if (o.top10HolderPct > input.config.maxTop10HolderPct) return entryResult(input, 'SKIP', 'HOLDER_CONCENTRATION_TOO_HIGH', 'Top-10 holder concentration exceeds the limit.');
-  if (o.devHolderPct > input.config.maxDevHolderPct) return entryResult(input, 'SKIP', 'DEV_HOLDING_TOO_HIGH', 'Developer holding exceeds the limit.');
+  if (o.riskLevel === 'HIGH' || o.honeypot === true) return entryResult(input, 'SKIP', 'SECURITY_REJECTED', 'Token security checks rejected entry.');
+  if ((o.top10HolderPct != null && (!finite(o.top10HolderPct) || o.top10HolderPct < 0 || o.top10HolderPct > 100))
+    || (o.devHolderPct != null && (!finite(o.devHolderPct) || o.devHolderPct < 0 || o.devHolderPct > 100))) return entryResult(input, 'SKIP', 'INVALID_INPUT', 'Available holder percentages must be between 0 and 100.');
+  if (o.top10HolderPct != null && o.top10HolderPct > input.config.maxTop10HolderPct) return entryResult(input, 'SKIP', 'HOLDER_CONCENTRATION_TOO_HIGH', 'Top-10 holder concentration exceeds the limit.');
+  if (o.devHolderPct != null && o.devHolderPct > input.config.maxDevHolderPct) return entryResult(input, 'SKIP', 'DEV_HOLDING_TOO_HIGH', 'Developer holding exceeds the limit.');
   if (o.dexStatus !== 'active') return entryResult(input, 'SKIP', 'DEX_INACTIVE', 'Indexed DEX activity is not active.');
   if (!o.buyEnabled) return entryResult(input, 'SKIP', 'BUY_ROUTE_UNAVAILABLE', 'No executable buy route is available.');
   if (o.liquidityUsd < input.config.minLiquidityUsd) return entryResult(input, 'SKIP', 'LIQUIDITY_TOO_LOW', 'Pool liquidity is below the floor.');

@@ -64,12 +64,12 @@ describe('versioned replay corpus', () => {
       .toEqual(corpus.matrices['btc15m-value-snipe']);
   });
 
-  it('keeps the Memecoin Momentum Guard 0.9.0 matrix decisions stable', () => {
+  it('keeps the Memecoin Momentum Guard 0.13.0 matrix decisions stable', () => {
     const corpus = JSON.parse(readFileSync(
-      resolve(__dirname, '../../fixtures/replay/memecoin-momentum-guard-v0.9.0.json'),
+      resolve(__dirname, '../../fixtures/replay/memecoin-momentum-guard-v0.13.0.json'),
       'utf8',
     )) as { packageVersion: string; matrix: Array<[string, string, string]> };
-    expect(corpus.packageVersion).toBe('0.9.0');
+    expect(corpus.packageVersion).toBe('0.13.0');
     expect(runMemecoinMomentumGuardSimulationMatrix().map((row) => [
       row.scenarioId,
       row.decision.decision,

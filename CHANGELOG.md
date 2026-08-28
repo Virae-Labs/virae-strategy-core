@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.13.0 - 2026-08-28
+
+- Allow Momentum Guard and Launch Scout entry evaluation to continue when honeypot, risk-level, or holder evidence is unavailable; explicit high-risk, honeypot, and excessive holder values still reject entry.
+- Bump both memecoin strategy model versions and record the new Momentum Guard replay contract.
+
 ## 0.12.0 - 2026-08-28
 
 - Broaden Momentum Guard forward-simulation pair-age, liquidity, volume, transaction, anomaly, and buy-share ranges without changing the live default or fail-closed safety gates.

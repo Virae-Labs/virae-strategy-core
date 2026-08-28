@@ -53,7 +53,7 @@ export function buildMemecoinMomentumGuardSimulationMatrix(): MemecoinMomentumSi
     entry('entry-ready', 'ENTRY', 'Persistent confirmed momentum with a safe executable quote passes.', () => {}, 'ELIGIBLE', 'ENTRY_READY'),
     entry('signal-not-persistent', 'ENTRY', 'A first observation waits.', (i) => { i.observation.signalContinuityCount = 1; }, 'WAIT', 'SIGNAL_NOT_PERSISTENT'),
     entry('overheated', 'ENTRY', 'An overheated move is not chased.', (i) => { i.observation.priceChange1hPct = 55; }, 'SKIP', 'MOMENTUM_OVERHEATED'),
-    entry('security-unavailable', 'DATA_QUALITY', 'Unknown honeypot evidence fails closed.', (i) => { i.observation.honeypot = null; }, 'SKIP', 'SECURITY_UNAVAILABLE'),
+    entry('security-unavailable', 'DATA_QUALITY', 'Missing security evidence passes through to the remaining entry gates.', (i) => { i.observation.riskLevel = 'UNKNOWN'; i.observation.honeypot = null; }, 'ELIGIBLE', 'ENTRY_READY'),
     entry('observation-stale', 'DATA_QUALITY', 'A stale observation fails closed.', (i) => { i.observation.capturedAtSec = NOW - 60; }, 'SKIP', 'OBSERVATION_STALE'),
     entry('position-limit', 'RISK', 'Open-position limits block entry.', (i) => { i.risk.openPositionCount = 2; }, 'SKIP', 'POSITION_LIMIT_REACHED'),
     entry('daily-loss-stop', 'RISK', 'Daily realized loss stops new entries.', (i) => { i.risk.dailyRealizedPnlUsd = -20; }, 'SKIP', 'DAILY_LOSS_LIMIT_REACHED'),

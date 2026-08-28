@@ -1,0 +1,20 @@
+{
+  "packageVersion": "0.13.0",
+  "matrix": [
+    ["entry-ready", "ELIGIBLE", "ENTRY_READY"],
+    ["signal-not-persistent", "WAIT", "SIGNAL_NOT_PERSISTENT"],
+    ["overheated", "SKIP", "MOMENTUM_OVERHEATED"],
+    ["security-unavailable", "ELIGIBLE", "ENTRY_READY"],
+    ["observation-stale", "SKIP", "OBSERVATION_STALE"],
+    ["position-limit", "SKIP", "POSITION_LIMIT_REACHED"],
+    ["daily-loss-stop", "SKIP", "DAILY_LOSS_LIMIT_REACHED"],
+    ["quote-required", "WAIT", "QUOTE_REQUIRED"],
+    ["quote-expiring", "WAIT", "QUOTE_EXPIRING"],
+    ["impact-high", "SKIP", "PRICE_IMPACT_TOO_HIGH"],
+    ["exit-hold", "HOLD", "HOLD"],
+    ["exit-take-profit", "EXIT", "TAKE_PROFIT"],
+    ["exit-stop-loss", "EXIT", "STOP_LOSS"],
+    ["exit-time-stop", "EXIT", "TIME_STOP"],
+    ["exit-risk-stop", "EXIT", "RISK_STOP"]
+  ]
+}

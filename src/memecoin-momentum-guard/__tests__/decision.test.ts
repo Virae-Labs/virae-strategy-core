@@ -58,7 +58,7 @@ test.each([
   ['STRATEGY_DISABLED', (input: any) => { input.risk.globallyEnabled = false; }],
   ['PAIR_TOO_NEW', (input: any) => { input.observation.pairCreatedAtSec = input.nowSec - 60; }],
   ['SECURITY_REJECTED', (input: any) => { input.observation.riskLevel = 'HIGH'; }],
-  ['HOLDER_CONCENTRATION_UNAVAILABLE', (input: any) => { input.observation.top10HolderPct = null; }],
+  ['SECURITY_REJECTED', (input: any) => { input.observation.honeypot = true; }],
   ['HOLDER_CONCENTRATION_TOO_HIGH', (input: any) => { input.observation.top10HolderPct = 60; }],
   ['DEX_INACTIVE', (input: any) => { input.observation.dexStatus = 'stale'; }],
   ['BUY_ROUTE_UNAVAILABLE', (input: any) => { input.observation.buyEnabled = false; }],
@@ -83,6 +83,14 @@ test.each([
 test('fails closed for malformed entry and exit inputs', () => {
   expect(decideMemecoinMomentumEntry(null as never)).toMatchObject({ decision: 'SKIP', reasonCode: 'INVALID_INPUT' });
   expect(decideMemecoinMomentumExit({ costBasisUsd: 0 } as never)).toMatchObject({ decision: 'SKIP', reasonCode: 'INVALID_INPUT' });
+});
+
+test('continues when optional security and holder evidence is unavailable', () => {
+  const input = buildMemecoinMomentumGuardSimulationMatrix()[0].entryInput!;
+  input.observation.riskLevel = 'UNKNOWN';
+  input.observation.honeypot = null;
+  input.observation.top10HolderPct = null;
+  expect(decideMemecoinMomentumEntry(input)).toMatchObject({ decision: 'ELIGIBLE', reasonCode: 'ENTRY_READY' });
 });
 
 test('requires an executable sell route and quote before exit evaluation', () => {

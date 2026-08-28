@@ -3,7 +3,7 @@ export type MemecoinMomentumGuardVenue = typeof MEMECOIN_MOMENTUM_GUARD_VENUES[n
 
 export const MEMECOIN_MOMENTUM_GUARD_STRATEGY_MANIFEST = {
   id: 'memecoin-momentum-guard',
-  modelVersion: 'momentum-guard-v2',
+  modelVersion: 'momentum-guard-v3',
   inputSchemaVersion: 1,
   executionPolicyVersion: 1,
   executionPhase: 'HOST_EXECUTION_SUPPORTED',

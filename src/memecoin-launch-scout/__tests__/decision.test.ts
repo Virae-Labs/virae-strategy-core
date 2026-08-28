@@ -36,12 +36,23 @@ test('exports calibrated launch windows and participation floors', () => {
 });
 
 test.each([
+  ['SECURITY_REJECTED', (i: any) => { i.observation.riskLevel = 'HIGH'; }],
+  ['SECURITY_REJECTED', (i: any) => { i.observation.honeypot = true; }],
   ['HOLDER_CONCENTRATION_TOO_HIGH', (i: any) => { i.observation.top10HolderPct = 70; }],
   ['DEV_HOLDING_TOO_HIGH', (i: any) => { i.observation.devHolderPct = 30; }],
   ['LIQUIDITY_TOO_LOW', (i: any) => { i.observation.liquidityUsd = 1_000; }],
   ['DAILY_NOTIONAL_LIMIT_REACHED', (i: any) => { i.risk.dailyExecutedNotionalUsd = 50; }],
   ['ORDER_POOL_RATIO_TOO_HIGH', (i: any) => { i.quote.orderPoolRatioPct = 1; }],
 ])('fails closed at %s', (reasonCode, mutate) => { const input = buildMemecoinLaunchScoutSystemSimulationMatrix()[0].entryInput!; mutate(input); expect(decideMemecoinLaunchEntry(input).reasonCode).toBe(reasonCode); });
+
+test('continues when security and holder evidence is unavailable', () => {
+  const input = buildMemecoinLaunchScoutSystemSimulationMatrix()[0].entryInput!;
+  input.observation.riskLevel = 'UNKNOWN';
+  input.observation.honeypot = null;
+  input.observation.top10HolderPct = null;
+  input.observation.devHolderPct = null;
+  expect(decideMemecoinLaunchEntry(input)).toMatchObject({ decision: 'ELIGIBLE', reasonCode: 'ENTRY_READY' });
+});
 
 test('requires valid inputs and executable exit evidence', () => {
   expect(decideMemecoinLaunchEntry(null as never)).toMatchObject({ decision: 'SKIP', reasonCode: 'INVALID_INPUT' });
