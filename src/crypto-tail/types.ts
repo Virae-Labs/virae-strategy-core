@@ -30,6 +30,13 @@ export type Btc15mEntryConfig = {
   directionFlipStopEnabled: boolean;
   distanceCollapseStopEnabled: boolean;
   distanceCollapseStopPercent: number;
+  // Stops out on a live order-flow-imbalance reversal from an external, independent
+  // signal source (e.g. the underlying's own spot venue order book), ahead of and
+  // separate from the Chainlink-reference-price-driven directionFlipStopEnabled check
+  // above. The host computes the signal and passes its current read in as
+  // CryptoTailExitPolicy's companion `ofiSignal` input; this flag only controls
+  // whether the evaluator acts on it when supplied. Default off.
+  ofiReversalStopEnabled: boolean;
   // Consistency gate: skip when recent price momentum opposes the trailing TWAP
   // lead by at least `consistencyMinContradictionBps` (the lead is reversing, so a
   // cheap ask is the market correctly pricing that reversal). Default off.

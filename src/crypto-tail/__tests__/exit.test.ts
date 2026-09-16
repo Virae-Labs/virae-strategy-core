@@ -85,4 +85,69 @@ describe('evaluateCryptoTailExit', () => {
       nowSec: 100,
     })).toMatchObject({ shouldExit: false, reasonCode: 'POSITION_HELD', currentDelta: 120 });
   });
+
+  it('exits an Up position when the OFI signal reverses to favor Down', () => {
+    expect(evaluateCryptoTailExit({
+      position: { outcome: 'Up', entryDistanceBps: 20 },
+      policy: { directionFlipEnabled: false, distanceCollapsePercent: null, ofiReversalEnabled: true },
+      oracle,
+      ofiSignal: { favoredOutcome: 'Down' },
+      roundEndSec: 120,
+      nowSec: 100,
+    })).toMatchObject({ shouldExit: true, reasonCode: 'OFI_REVERSAL' });
+  });
+
+  it('fires an OFI reversal exit even when the oracle is stale, since the signal is independent of it', () => {
+    expect(evaluateCryptoTailExit({
+      position: { outcome: 'Down', entryDistanceBps: 20 },
+      policy: { directionFlipEnabled: true, distanceCollapsePercent: 40, ofiReversalEnabled: true },
+      oracle: { ...oracle, fresh: false },
+      ofiSignal: { favoredOutcome: 'Up' },
+      roundEndSec: 120,
+      nowSec: 100,
+    })).toMatchObject({ shouldExit: true, reasonCode: 'OFI_REVERSAL' });
+  });
+
+  it('does not exit on OFI reversal when the policy flag is off, even with a live contradicting signal', () => {
+    expect(evaluateCryptoTailExit({
+      position: { outcome: 'Up', entryDistanceBps: 20 },
+      policy: { directionFlipEnabled: false, distanceCollapsePercent: null, ofiReversalEnabled: false },
+      oracle,
+      ofiSignal: { favoredOutcome: 'Down' },
+      roundEndSec: 120,
+      nowSec: 100,
+    })).toMatchObject({ shouldExit: false, reasonCode: 'POSITION_HELD' });
+  });
+
+  it('does not exit on OFI reversal when the signal agrees with the held position', () => {
+    expect(evaluateCryptoTailExit({
+      position: { outcome: 'Up', entryDistanceBps: 20 },
+      policy: { directionFlipEnabled: false, distanceCollapsePercent: null, ofiReversalEnabled: true },
+      oracle,
+      ofiSignal: { favoredOutcome: 'Up' },
+      roundEndSec: 120,
+      nowSec: 100,
+    })).toMatchObject({ shouldExit: false, reasonCode: 'POSITION_HELD' });
+  });
+
+  it('does not exit on OFI reversal when the host has no confident signal read yet', () => {
+    expect(evaluateCryptoTailExit({
+      position: { outcome: 'Up', entryDistanceBps: 20 },
+      policy: { directionFlipEnabled: false, distanceCollapsePercent: null, ofiReversalEnabled: true },
+      oracle,
+      ofiSignal: { favoredOutcome: null },
+      roundEndSec: 120,
+      nowSec: 100,
+    })).toMatchObject({ shouldExit: false, reasonCode: 'POSITION_HELD' });
+  });
+
+  it('treats a missing ofiSignal the same as no confident read (back-compat for callers built before this field existed)', () => {
+    expect(evaluateCryptoTailExit({
+      position: { outcome: 'Up', entryDistanceBps: 20 },
+      policy: { directionFlipEnabled: false, distanceCollapsePercent: null, ofiReversalEnabled: true },
+      oracle,
+      roundEndSec: 120,
+      nowSec: 100,
+    })).toMatchObject({ shouldExit: false, reasonCode: 'POSITION_HELD' });
+  });
 });

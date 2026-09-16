@@ -19,6 +19,7 @@ export const REFERENCE_CRYPTO_TAIL_CONFIG_V1: CryptoTailStrategyConfig = {
     absoluteDistanceGateEnabled: false,
     minAbsoluteDistanceUsd: 30,
     directionFlipStopEnabled: false,
+    ofiReversalStopEnabled: false,
     distanceCollapseStopEnabled: false,
     distanceCollapseStopPercent: 40,
     consistencyGateEnabled: false,
