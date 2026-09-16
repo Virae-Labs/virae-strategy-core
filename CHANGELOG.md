@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The project follows sem
 
 ## Unreleased
 
+## 0.14.0 - 2026-09-16
+
+- Add an optional order-flow-imbalance reversal exit signal to Crypto Tail: `Btc15mEntryConfig.ofiReversalStopEnabled` and `CryptoTailExitPolicy.ofiReversalEnabled` (default off), paired with a new `evaluateCryptoTailExit` input, `ofiSignal: { favoredOutcome: 'Up' | 'Down' | null }`. The host computes the signal from an independent, external source (e.g. the underlying's own spot venue order book) and passes its current read in; the evaluator only compares it against the held position and fires the new `OFI_REVERSAL` reason code. Checked ahead of the Chainlink-availability guard, since the signal doesn't depend on oracle freshness. Fully backward compatible: `ofiReversalEnabled` and `ofiSignal` are both optional and omitting them reproduces the exact prior behavior.
+
 ## 0.13.0 - 2026-08-28
 
 - Allow Momentum Guard and Launch Scout entry evaluation to continue when honeypot, risk-level, or holder evidence is unavailable; explicit high-risk, honeypot, and excessive holder values still reject entry.
